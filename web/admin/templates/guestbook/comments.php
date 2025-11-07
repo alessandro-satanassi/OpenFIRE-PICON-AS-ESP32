@@ -69,10 +69,10 @@
     <!-- Desktop Row -->
     <tr class="no-phone comment <?php echo $cssClass ?>">
         <td class="text-small border-left border-mute-light border-bottom">
-            <div class="margin-bottom"><?php echo $comment['timestamp'] ?></div>
+            <div class="margin-bottom"><?php echo formatDate(DateTimeImmutable::createFromFormat("Y-m-d H:i:s", $comment['timestamp']), false, true, true) ?></div>
             <div class="margin-bottom"><?php echo $user ?></div>
             <?php echo $rating; ?>
-            <div>IP: <?php echo $comment['ip'] ?></div>
+            <div><span class="float-left margin-right-small">IP:</span><span class="float-left"><?php echo $comment['ip'] ?></span></div>
         </td>
         
         <td class="text-small border-bottom border-mute-light">
@@ -91,7 +91,7 @@
         <td colspan="4">
             <div class="margin-bottom float-left"><?php echo $user ?></div>
             <div class="margin-bottom float-right">
-                <?php echo date("Y-m-d", strtotime($comment['timestamp'])) ?>
+                <?php echo formatDate(DateTimeImmutable::createFromFormat("Y-m-d H:i:s", $comment['timestamp'])) ?>
                 <span class="no-small-phone"><?php echo date("H:i", strtotime($comment['timestamp'])) ?></span>
             </div>
             <?php if (strlen($rating)): ?>
@@ -107,7 +107,7 @@
                 <?php echo "<span class=\"body\">" . $comment['body'] . "</span>" ?>
             </div>
             <div class="flex">
-                <div class="flex-grow-1">IP: <?php echo $comment['ip'] ?></div>
+                <div class="flex-grow-1"><span class="float-left margin-right-small">IP:</span><span class="float-left"><?php echo $comment['ip'] ?></span></div>
                 <div class="flex-grow-1 text-right padding-left-10-child"><?php echo $links ?></div>
             </div>
         </td>

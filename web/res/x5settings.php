@@ -13,12 +13,30 @@ $imSettings['general'] = array(
 	'homepage_url' => 'https://alessandro-satanassi.github.io/OpenFIRE-PICON-ESP32/
 /index.html',
 	'icon' => '',
-	'version' => '2022.3.7.0',
-	'sitename' => 'Nuovo Progetto',
+	'version' => '2025.2.11.0',
+	'sitename' => 'OpenFIRE PICON Esp32',
 	'lang_code' => 'it-IT',
+	'rtl' => false,
 	'public_folder' => '',
 	'salt' => 'ombazuvfx9n3whi3kr7lyb0w8k37i0ollecx3imee9u1g5celwuvr2sc',
-	'common_email_sender_addres' => ''
+	'common_email_sender_addres' => '',
+	'enable_sender_header' => true,
+	'date_format' => 'dd MMM yyyy',
+	'date_format_ext' => 'dddd dd MMM yyyy',
+	'date_format_no_day' => 'MMM yyyy',
+	'date_format_no_day_ext' => 'MMM yyyy'
+);
+/*
+|-------------------------------
+|	BREAKPOINTS
+|-------------------------------
+*/
+
+$imSettings['breakpoints'] = array(
+	array("name" => "Desktop", "hash" => "ea2f0ee4d5cbb25e1ee6c7c4378fee7b", "start" => "max", "end" => 1150.0, "fluid" => false),
+	array("name" => "Breakpoint 1", "hash" => "d2f9bff7f63c0d6b7c7d55510409c19b", "start" => 1149.9, "end" => 720.0, "fluid" => false),
+	array("name" => "Mobile", "hash" => "72e5146e7d399bc2f8a12127e43469f1", "start" => 719.9, "end" => 480.0, "fluid" => false),
+	array("name" => "Mobile Fluid", "hash" => "5ecdcca63de80fd3d4fbb36295d22b7d", "start" => 479.9, "end" => 0.0, "fluid" => true),
 );
 /*
 |-------------------------------
@@ -38,8 +56,8 @@ $imSettings['password_policy'] = array(
 |	Captcha
 |-------------------------------
 */ImTopic::$captcha_code = "		<div class=\"x5captcha-wrap\">
-			<label for=\"uolvapp1-imCpt\">Parola di controllo:</label><br />
-			<input type=\"text\" id=\"uolvapp1-imCpt\" class=\"imCpt\" name=\"imCpt\" maxlength=\"5\" />
+			<label for=\"am09ju0f-imCpt\">Parola di controllo:</label><br />
+			<input type=\"text\" id=\"am09ju0f-imCpt\" class=\"imCpt\" name=\"imCpt\" maxlength=\"5\" />
 		</div>
 ";
 
@@ -59,37 +77,6 @@ $imSettings['admin'] = array(
 */
 
 $imSettings['databases'] = array();
-$ecommerce = Configuration::getCart();
-$ecommerce->setSettings(array(
-	'page_url' => 'https://alessandro-satanassi.github.io/OpenFIRE-PICON-ESP32/
-/',
-	'force_sender' => false,
-	'mail_btn_css' => 'display: inline-block; text-decoration: none; color: rgba(255, 255, 255, 1); background-color: rgba(54, 71, 79, 1); padding: 5px 5px 5px 5px; border-style: solid; border-width: 0px 0px 0px 0px; border-color: rgba(55, 71, 79, 1) rgba(55, 71, 79, 1) rgba(55, 71, 79, 1) rgba(55, 71, 79, 1); border-top-left-radius: 0px; border-top-right-radius: 0px; border-bottom-left-radius: 0px; border-bottom-right-radius: 0px;',
-	'email_opening' => 'Gentile Cliente,<br /><br />Ringraziandola per il Suo ordine, le ricordiamo che siamo in attesa del pagamento.<br /><br />Qui di seguito può trovare l\'elenco dei prodotti ordinati, i dati di fatturazione e spedizione e le istruzioni per poter effettuare il pagamento.',
-	'email_closing' => 'Rimaniamo a Sua disposizione per ulteriori informazioni.<br /><br />Cordiali Saluti, Staff Commerciale.',
-	'useCSV' => false,
-	'header_bg_color' => 'rgba(37, 58, 88, 1)',
-	'header_text_color' => 'rgba(255, 255, 255, 1)',
-	'cell_bg_color' => 'rgba(255, 255, 255, 1)',
-	'cell_text_color' => 'rgba(0, 0, 0, 1)',
-	'border_color' => 'rgba(211, 211, 211, 1)',
-	'owner_email' => 'example@example.com',
-	'vat_type' => 'included',
-	'availability_image' => ''
-));
-
-$ecommerce->setPriceFormatData(array(
-	'decimals' => 2,
-	'decimal_sep' => '.',
-	'thousands_sep' => '',
-	'currency_to_right' => true,
-	'currency_separator' => ' ',
-	'show_zero_as' => '0',
-	'currency_symbol' => '€',
-	'currency_code' => 'EUR',
-	'currency_name' => 'Euro',
-));
-
 
 /*
 |-------------------------------------------------------------------------------------------
@@ -107,8 +94,8 @@ $imSettings['guestbooks'] = array();
 */
 
 $ImMailer->emailType = 'phpmailer';
-$ImMailer->header = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">' . "\n" . '<html>' . "\n" . '<head>' . "\n" . '<meta http-equiv="content-type" content="text/html; charset=utf-8">' . "\n" . '<meta name="generator" content="Incomedia WebSite X5 Evolution 2022.3.7 - www.websitex5.com">' . "\n" . '</head>' . "\n" . '<body bgcolor="#37474F" style="background-color: #37474F;">' . "\n\t" . '<table border="0" cellpadding="0" align="center" cellspacing="0" style="padding: 0; margin: 0 auto; width: 700px;">' . "\n\t" . '<tr><td id="imEmailContent" style="min-height: 300px; padding: 10px; font: normal normal normal 9pt \'Open Sans\'; color: #000000; background-color: #FFFFFF; text-decoration: none; text-align: left; width: 700px; border-style: solid; border-color: #000000; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; background-color: #FFFFFF" width="700px">' . "\n\t\t";
-$ImMailer->footer = "\n\t" . '</td></tr>' . "\n\t" . '</table>' . "\n" . '<table width="100%"><tr><td id="imEmailFooter" style="font: normal normal normal 7pt \'Open Sans\'; color: #FFFFFF; background-color: transparent; text-decoration: none; text-align: center;  padding: 10px; margin-top: 5px;background-color: transparent">' . "\n\t\t" . 'Questo messaggio di posta elettronica contiene informazioni rivolte esclusivamente al destinatario sopra indicato.<br>Nel caso aveste ricevuto questo messaggio di posta elettronica per errore, siete pregati di segnalarlo immediatamente al mittente e distruggere quanto ricevuto senza farne copia.' . "\n\t" . '</td></tr></table>' . "\n\t" . '</body>' . "\n" . '</html>';
+$ImMailer->header = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">' . "\n" . '<html>' . "\n" . '<head>' . "\n" . '<meta http-equiv="content-type" content="text/html; charset=utf-8">' . "\n" . '<meta name="generator" content="Incomedia WebSite X5 Evolution 2025.2.11 - www.websitex5.com">' . "\n" . '</head>' . "\n" . '<body bgcolor="#37474F" style="background-color: #37474F;">' . "\n\t" . '<table border="0" cellpadding="0" align="center" cellspacing="0" style="padding: 0; margin: 0 auto; width: 700px; border-collapse: separate;">' . "\n\t" . '<tr><td id="imEmailContent" style="min-height: 300px; padding: 10px; font: normal normal normal 9pt \'Open Sans\'; color: #000000; background-color: #FFFFFF; text-decoration: none; text-align: left; width: 700px; border-style: solid; border-color: rgba(0, 0, 0, 1) rgba(0, 0, 0, 1) rgba(0, 0, 0, 1) rgba(0, 0, 0, 1); border-top-width: 1px; border-right-width: 1px; border-bottom-width: 0; border-bottom: none; border-left-width: 1px;  margin-top: 25px;  margin-bottom: 25px; margin-left: 25px; margin-right: 25px;  background-color: #FFFFFF" width="700px">' . "\n\t\t";
+$ImMailer->footer = "\n\t" . '</td></tr>' . "\n\t" . '<tr><td id="imEmailIcons" style="background-color: #FFFFFF;border-left: 1px solid rgba(0, 0, 0, 1); border-right: 1px solid rgba(0, 0, 0, 1); border-bottom-style: solid; border-bottom-color: #000000; border-bottom-width: 1px; border-bottom-left-radius: 0px; border-bottom-right-radius: 0px;  padding-top: 25px;  padding-bottom: 25px; padding-left: 15px; padding-right: 15px;  text-align: center;  min-height: 300px; " width="700"></td></tr>' . "\n\t" . '</table>' . "\n" . '<table width="100%"><tr><td id="imEmailFooter" style="font: normal normal normal 7pt \'Open Sans\'; color: #FFFFFF; background-color: transparent; text-decoration: none; text-align: center;  padding: 10px; margin-top: 5px;background-color: transparent">' . "\n\t\t" . 'Questo messaggio di posta elettronica contiene informazioni rivolte esclusivamente al destinatario sopra indicato.<br>Nel caso aveste ricevuto questo messaggio di posta elettronica per errore, siete pregati di segnalarlo immediatamente al mittente e distruggere quanto ricevuto senza farne copia.' . "\n\t" . '</td></tr></table>' . "\n\t" . '</body>' . "\n" . '</html>';
 $ImMailer->bodyBackground = '#FFFFFF';
 $ImMailer->bodyBackgroundEven = '#FFFFFF';
 $ImMailer->bodyBackgroundOdd = '#F0F0F0';

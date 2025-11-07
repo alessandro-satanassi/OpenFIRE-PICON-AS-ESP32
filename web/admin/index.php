@@ -18,6 +18,12 @@ $main->stylesheets = array("css/dashboard.css");
 $main->content = "";
 
 
+// ---------------
+// Boxes Container
+// ---------------
+$main->content .= "<div class=\"dashboard-boxes-container\">";
+
+
 // ----------
 // Statistics
 // ----------
@@ -187,7 +193,6 @@ if ($count > 0) {
     $main->content .= $boxT->render();
 }
 
-
 // ----------------------
 // Optional Objects boxes
 // ----------------------
@@ -206,5 +211,10 @@ foreach ($settings['admin']['extra-dashboard'] as $key => $item) {
     // Append the box to the main template
     $main->content .= $boxT->render();
 }
+
+// ---------------
+// Boxes Container
+// ---------------
+$main->content .= "</div>";
 
 echo $main->render();

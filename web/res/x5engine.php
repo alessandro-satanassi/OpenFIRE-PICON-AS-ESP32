@@ -51,6 +51,10 @@ class L10n
 	}
 }
 
+require_once('phar://' . __DIR__ . '/handlebars.phar/autoload.php');
+use Handlebars\Handlebars;
+use Handlebars\Loader\FilesystemLoader;
+
 
 /**
  * Blog class
@@ -168,7 +172,8 @@ class imBlog
         $trailing_dots = false;
         for ($i = 1; $i <= $pages; $i++) {
             if ($pages < 7 || $i == 1 || $i == $pages || ($i >= $current - 1 && $i <= $current + 1)) {
-                echo "<a class=\"page" . ($i == $current ? " current" : "") . "\" href=\"" . $baseurl . "start=" . ($length * ($i - 1)) . "&length=" . $length . "\">" . $i . "</a>";
+                echo "<a class=\"page" . ($i == $current ? " current" : "") . "\" href=\"" . $baseurl . "start=" . ($length * ($i - 1)) . "&length=" . $length . "\">" .
+                     "<span class=\"screen-reader-only-even-focused\">" . ($i == $current ? l10n("cmn_pagination_current_page", "Current page:") : l10n("cmn_pagination_go_to_page", "Go to page:")) . "</span>" . $i . "</a>";
             }
             else if ($i < $current - 1 && !$leading_dots) {
                 echo "<span class=\"dots-page\">...</span>";
@@ -299,6 +304,7 @@ class imBlog
             foreach ($og['images'] as $image) {
                 $html .= $tabs . '<meta property="og:image" content="' . htmlspecialchars($image) . '" />' . "\n";
             }
+			if (count($og['images']) > 0) $html .= $tabs . '<meta name="twitter:card" content="summary_large_image" />' . "\n";
         }
         return $html;
     }
@@ -607,7 +613,8 @@ class imBlog
             // Post
             return htmlspecialchars(str_replace("\n", " ", $imSettings['blog']['posts'][$data['id']]['keywords']));
         } 
-        return "";
+        // Default (Home page): Show the blog keywords
+        return htmlspecialchars(str_replace("\n", " ", $imSettings['blog']['keywords']));
     }
 
     /**
@@ -718,12 +725,7 @@ class imBlog
             return;
 
         if ($ext) {
-            $text = l10n('date_full_months');
-            $timestamp = explode('/', $bp['timestamp']);
-            $timestamp[1] = $text[$timestamp[1] - 1];
-            $timestamp = implode(' ', $timestamp);
-
-            $cover_html = ($bp['cover'] !== '' ? "<div id=\"imBlogPostCover_" . $id . "\" class=\"imBlogPostCover\"></div>\n" : '');
+            $cover_html = ($bp['cover'] !== '' ? "<img id=\"imBlogPostCover_" . $id . "\" class=\"imBlogPostCover\" src=\"../" . $bp['cover'] . "\" alt=\"" . $bp['coverAlt'] . "\" title=\"" . $bp['coverTitle'] . "\"/>\n" : '');
 
             if (isset($bs['article_type']) && $bs['article_type'] == 'covertitlecontents') {
                 echo $cover_html;
@@ -752,7 +754,19 @@ class imBlog
                 }
                 echo "&middot; ";
             }
-            echo $timestamp . "</span>";
+            echo $bp['timestampExt'];
+            if ($bp['word_count'] > 0) {
+                echo " &middot; <svg aria-labelledby=\"blog_post_" . $id . "_read_time\" role=\"img\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"square\" stroke-width=\"2px\" color=\"currentColor\" viewBox=\"0 0 24 24\" width=\"1.2em\" height=\"1.2em\" style=\"vertical-align: text-top;\">";
+                echo "<title id=\"blog_post_" . $id . "_read_time\">" . l10n("blog_icon_read_time") . "</title>";
+                echo "<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M12 5v7l4 4\"></path></svg>&nbsp;";
+                $seconds = ceil($bp['word_count'] * 60 / $bs['article_read_speed']);
+                $seconds = floor(($seconds + 14) / 15) * 15; // round up seconds at multiple of 15 seconds
+                if ($seconds <= 60)
+                    echo "1:00";
+                else
+                    echo floor($seconds / 60) . ":" . ($seconds % 60 < 10 ? "0" : "") . ($seconds % 60);
+            }
+            echo "</span>";
 
             if (count($bp['tag']) > 0) {
                 echo "<br />Tags: ";
@@ -803,7 +817,7 @@ class imBlog
 
                 echo "\t\t</ul>\n\t</div>\n";
             }
-            echo (isset($imSettings['blog']['addThis']) ? "<br />" . $imSettings['blog']['addThis'] : "") . "<br /><br /></div>\n";
+            echo "<br /><br /></div>\n";
             if (isset($bp['foo_html'])) {
                 echo "<div class=\"imBlogPostFooHTML\">" . $bp['foo_html'] . "</div>\n";
             }
@@ -839,7 +853,7 @@ class imBlog
         else {
             echo "<article class=\"imBlogPostCard" . ($bp['cardCover'] !== "" ? " imBlogPostCardWithCover" : "") . "\">";
             if ($bp['cardCover'] !== "") {
-                echo "<div class=\"imBlogPostWrapperCardCover\"><img id=\"imBlogPostCardCover_" . $id . "\" class=\"imBlogPostCardCover\" src=\"../" . ($isHighlighted ? $bp['cover'] : $bp['cardCover']) . "\" alt=\"\" onclick=\"window.location='" . $bp['rel_url'] . "';\"/></div>";
+                echo "<div class=\"imBlogPostWrapperCardCover\"><img id=\"imBlogPostCardCover_" . $id . "\" class=\"imBlogPostCardCover\" src=\"../" . ($isHighlighted ? $bp['cover'] : $bp['cardCover']) . "\" alt=\"" . $bp['coverAlt'] . "\" title=\"" . $bp['coverTitle'] . "\" onclick=\"window.location='" . $bp['rel_url'] . "';\"/></div>";
             }
             if ($imSettings['blog']['show_card_title']) {
                 echo "<header class=\"imBlogPostCardTitle\"><h1><a href=\"" . $bp['rel_url'] . "\">" . $bp['title'] . "</a></h1></header>";
@@ -1043,6 +1057,498 @@ class imBlog
         }
     }
 
+
+
+	function customCardL10nStrings(){
+
+		$strings = array(
+			"blog_read_all" => l10n("blog_read_all"),
+			"blog_icon_category" => l10n("blog_icon_category"),
+			"blog_icon_author" => l10n("blog_icon_author"),
+			"blog_icon_date" => l10n("blog_icon_date"),
+			"blog_icon_read_time" => l10n("blog_icon_read_time")
+		);
+
+		return $strings;
+
+	}
+
+
+
+	function customCardBreakpointString( $cardStyle ){
+
+		$breakpointString = "";
+		$cardsperrowString = "";
+        $layoutVertMediaQuery = "";
+		$card = $cardStyle["card"];
+
+        global $imSettings;
+		$breakPoints = $imSettings['breakpoints'];
+
+		if ( isset( $breakPoints ) && count( $breakPoints ) > 0 ) {
+			$minContentW = 200;
+			$minCardW = $minContentW;
+			$minCardW = $minCardW + $card["margin"] + $card["margin"];
+			if ( $card["type"] == "leftcoverrightcontents" || $card["type"] == "leftcontentsrightcover" ) {
+                $minCardW = floor( $minContentW / ( ( 100.0 - $card["image"]["percentSize"] ) / 100.0 ) ) + $card["border"]["widths"]["left"] + $card["border"]["widths"]["right"];
+			}
+
+			$strPieceBPdesktop = "";
+			$strPieceCPRdesktop = "";
+			for ( $i = 0 ; $i < count( $breakPoints ) ; $i++ ) {
+
+				$maxAvailW = $breakPoints[$i]["end"];
+				if ( $breakPoints[$i]["end"] == 0 ) {
+					$maxAvailW = $breakPoints[$i]["start"];
+                    if ( $maxAvailW == "max" ) {
+					    $maxAvailW = $breakPoints[$i]["width"];
+                    }
+                } else {
+                    $maxAvailW = $imSettings['blog']['widths'][$i];
+				}
+
+				$cpr = $cardStyle["cardsPerRow"];
+				$BPEnd = $breakPoints[$i]["end"];
+                if ( $breakPoints[$i]["end"] == 0 && $breakPoints[$i]["start"] == "max" ) {
+					$BPEnd = $breakPoints[$i]["width"];
+                }
+				$w = max( floor( min( $BPEnd , $maxAvailW ) / $cpr ) , $minCardW );
+				$cpr = max( floor( min( $BPEnd , $maxAvailW ) / $w ) , 1 );
+				$w = max( floor( min( $BPEnd , $maxAvailW ) / $cpr ) , $minCardW );
+
+				$strPieceBP = " (max-width: START) END,";
+				$strPieceCPR = " (max-width: START) END,";
+
+				if ( $breakPoints[$i]["start"] == "max" ) {
+					$strPieceBP = " END";
+					$strPieceCPR = " END";
+				} else {
+					$strPieceBP = str_replace( "START" , $breakPoints[$i]["start"] . "px" , $strPieceBP );
+					$strPieceCPR = str_replace( "START" , $breakPoints[$i]["start"] . "px" , $strPieceCPR );
+				}
+
+				if ( $breakPoints[$i]["end"] == 0 ) {
+					$strPieceBP = str_replace( "END" , "100%" , $strPieceBP );
+				} else {
+					$strPieceBP = str_replace( "END" , $w . "px" , $strPieceBP );
+				}
+				$strPieceCPR = str_replace( "END" , "" . $cpr , $strPieceCPR );
+
+				if ( $breakPoints[$i]["start"] == "max" ) {
+					$strPieceBPdesktop = $strPieceBP;
+					$strPieceCPRdesktop = $strPieceCPR;
+				} else {
+					$breakpointString .= $strPieceBP;
+					$cardsperrowString .= $strPieceCPR;
+				}
+
+                if ( $maxAvailW < $minCardW ) {
+                    if ( strlen($layoutVertMediaQuery) > 0 )
+                        $layoutVertMediaQuery .= " or ";
+                    if ( $breakPoints[$i]["start"] == "max" ) {
+                        $layoutVertMediaQuery .= "(min-width: " . $breakPoints[$i]["end"] . "px)";
+                    } else {
+                        if ( $breakPoints[$i]["end"] > 0 )
+                            $layoutVertMediaQuery .= "((min-width: " . $breakPoints[$i]["end"] . "px) and ";
+                        $layoutVertMediaQuery .= "(max-width: " . $breakPoints[$i]["start"] . "px)";
+                        if ( $breakPoints[$i]["end"] > 0 )
+                            $layoutVertMediaQuery .= ")";
+                    }
+                }
+                
+			}
+			$breakpointString .= $strPieceBPdesktop;
+			$cardsperrowString .= $strPieceCPRdesktop;
+
+		}
+
+        if (count( $breakPoints ) == 1){
+            $layoutVertMediaQuery = null;
+        }
+
+        $result = array(
+            "breakpointString" => $breakpointString,
+            "cardsperrowString" => $cardsperrowString,
+            "layoutVertMediaQuery" => $layoutVertMediaQuery
+        );
+
+		return $result;
+
+	}
+
+
+
+	function customCardContentLayout( $card ){
+
+                if ( $card["type"] == "leftcoverrightcontents" ) {
+                    return "horizontal-cover-left"; // same as default
+                } else if ( $card["type"] == "leftcontentsrightcover" ) {
+                    return "horizontal-cover-right";
+                } else if ( $card["type"] == "topcoverbottomcontents" ) {
+                    return "vertical-cover-top";
+                } else if ( $card["type"] == "topcontentsbottomcover" ) {
+                    return "vertical-title-top";
+                } else if ( $card["type"] == "coverasbackground" ) {
+                    return "cover-as-background";
+                }
+
+                return "horizontal-cover-left";//default
+
+	}
+
+
+
+	function customCardLayoutArrangement( $cardStyle ){
+
+                if ( $cardStyle["layout"] == "slideshow" ) {
+                    return "slideshow";
+                } else if ( $cardStyle["layout"] == "masonry" ) {
+                    return "masonry";
+                } else if ( $cardStyle["layout"] == "variableheight" ) {
+                    return "changing-height";
+                } else {
+                    // if $cardStyle["layout"] == "fixedheight"
+                    return "same-height";
+                }
+
+	}
+
+
+
+	function customCardMisc( $rootSelector, $cardStyle ){
+
+		$misc = array();
+
+		if ( isset( $rootSelector ) ) {
+			$misc["rootSelector"] = $rootSelector;
+		}
+
+		if ( isset( $cardStyle ) ) {
+
+			$BPValues = $this->customCardBreakpointString( $cardStyle );
+			$misc["cardBreakpoint"] = $BPValues["breakpointString"];            
+			$misc["cardContentLayout"] = $this->customCardContentLayout( $cardStyle["card"] );
+			$misc["cardLayoutCardArrangement"] = $this->customCardLayoutArrangement( $cardStyle );
+			$misc["cardLayoutCardHeight"] = $cardStyle["card"]["height"];
+			$misc["cardLayoutCardsPerRow"] = $BPValues["cardsperrowString"];
+			$misc["layoutVertMediaQuery"] = $BPValues["layoutVertMediaQuery"];
+
+		}
+
+		return $misc;
+
+	}
+
+
+
+	function getCalculatedGlobalData( $card, $misc ){
+
+        $mobileBPMaxWidth = 479.9;
+        if ( isset( $imSettings['breakpoints'] ) && count( $imSettings['breakpoints'] ) > 0 )
+            $mobileBPMaxWidth = $imSettings['breakpoints'][count( $imSettings['breakpoints'] ) - 1]["start"];
+    
+		$calculated = array();
+
+		// Calculated properties for Cover image
+
+		if ( isset( $card["image"]["mouseovereffect"] ) ) {
+			if ( $card["image"]["mouseovereffect"] == "grow" ) {
+				$calculated["imageOverRule"] = "transform: scale(1.1); ";
+			} else if ( $card["image"]["mouseovereffect"] == "shrink" ) {
+				$calculated["imageOverRule"] = "transform: scale(0.9); ";
+			} else if ( $card["image"]["mouseovereffect"] == "rotate" ) {
+				$calculated["imageOverRule"] = "transform: rotate(4deg); ";
+			}
+		}
+
+		if ( isset( $misc["cardBreakpoint"] ) ) {
+			$calculated["cardBreakpoint"] = $misc["cardBreakpoint"];
+		}
+
+		if ( isset( $misc["cardContentDimension"] ) ) {
+			$calculated["cardContentDimension"] = $misc["cardContentDimension"];
+		}
+
+		$calculated["cardContentLayout"] = "horizontal-cover-left";
+		if ( $card["type"] == "leftcoverrightcontents" ) {
+			$calculated["cardContentLayout"] = "horizontal-cover-left"; // same as default
+		} else if ( $card["type"] == "leftcontentsrightcover" ) {
+			$calculated["cardContentLayout"] = "horizontal-cover-right";
+		} else if ( $card["type"] == "topcoverbottomcontents" ) {
+			$calculated["cardContentLayout"] = "vertical-cover-top";
+		} else if ( $card["type"] == "topcontentsbottomcover" ) {
+			$calculated["cardContentLayout"] = "vertical-title-top";
+		}
+		if ( isset( $misc["cardContentLayout"] ) && (
+			$misc["cardContentLayout"] == "horizontal-cover-left" || 
+			$misc["cardContentLayout"] == "horizontal-cover-right" || 
+			$misc["cardContentLayout"] == "vertical-cover-top" || 
+			$misc["cardContentLayout"] == "vertical-title-top" || 
+			$misc["cardContentLayout"] == "cover-as-background"
+		) ) {
+			// $misc["cardContentLayout"] overrides default and card.type
+			$calculated["cardContentLayout"] = $misc["cardContentLayout"];
+		}
+
+        $calculated["cardFixedHeight"] = false;
+        if ( 
+            isset( $misc["cardLayoutCardArrangement"] ) && 
+            ( $misc["cardLayoutCardArrangement"] == "same-height" || $misc["cardLayoutCardArrangement"] == "slideshow" )
+        ) {
+            $calculated["cardFixedHeight"] = true;
+        }
+
+        $calculated["isArrangeSameHeight"] = ( isset($misc["cardLayoutCardArrangement"]) && $misc["cardLayoutCardArrangement"] == "same-height" );
+        $calculated["isArrangeChangingHeight"] = ( isset($misc["cardLayoutCardArrangement"]) && $misc["cardLayoutCardArrangement"] == "changing-height" );
+        $calculated["isArrangeSlideshow"] = ( isset($misc["cardLayoutCardArrangement"]) && $misc["cardLayoutCardArrangement"] == "slideshow" );
+        $calculated["isArrangeMasonry"] = ( isset($misc["cardLayoutCardArrangement"]) && $misc["cardLayoutCardArrangement"] == "masonry" );
+
+        $calculated["isArrangeSameHeightOrChangingHeight"] = ( $calculated["isArrangeSameHeight"] || $calculated["isArrangeChangingHeight"] );
+        $calculated["isArrangeChangingHeightOrMasonry"] = ( $calculated["isArrangeChangingHeight"] || $calculated["isArrangeMasonry"] );
+
+        $calculated["isLayoutHorizontalCoverLeft"] = ( $calculated["cardContentLayout"] == "horizontal-cover-left" );
+        $calculated["isLayoutHorizontalCoverRight"] = ( $calculated["cardContentLayout"] == "horizontal-cover-right" );
+        if ( $misc["layoutVertMediaQuery"] && ($calculated["isLayoutHorizontalCoverLeft"] || $calculated["isLayoutHorizontalCoverRight"]) )
+            $calculated["layoutHorizontalMediaQueryStart"] = ( "@media not (" . $misc["layoutVertMediaQuery"] . ") {" );
+        $calculated["isLayoutVerticalCoverTop"] = ( $calculated["cardContentLayout"] == "vertical-cover-top" || $calculated["isLayoutHorizontalCoverLeft"] || $calculated["isLayoutHorizontalCoverRight"] );
+        $calculated["isLayoutVerticalTitleTop"] = ( $calculated["cardContentLayout"] == "vertical-title-top" );
+        if ( $calculated["cardContentLayout"] != "vertical-cover-top" )
+            $calculated["layoutVerticalMediaQueryStart"] = ( "@media " . ($misc["layoutVertMediaQuery"] ? $misc["layoutVertMediaQuery"] : "(max-width: 1px)") . " {" );
+        $calculated["isLayoutCoverAsBackground"] = ( $calculated["cardContentLayout"] == "cover-as-background" );
+
+        $calculated["isLayoutVertical"] = ( $calculated["isLayoutVerticalCoverTop"] || $calculated["isLayoutVerticalTitleTop"] );
+        $calculated["isLayoutHorizontal"] = ( $calculated["isLayoutHorizontalCoverLeft"] || $calculated["isLayoutHorizontalCoverRight"] );
+
+		// Calculated properties for vertical layout
+
+		$calculated["verticalImageHeight"] = $card["height"] * $card["image"]["percentSize"] / 100.0;
+        if ( 
+            ( 
+                isset( $misc["cardLayoutCardArrangement"] ) && 
+                ( $misc["cardLayoutCardArrangement"] == "same-height" || $misc["cardLayoutCardArrangement"] == "slideshow" ) 
+            ) &&
+            ( $calculated["cardContentLayout"] == "vertical-cover-top" || $calculated["cardContentLayout"] == "vertical-title-top" )
+        ) {
+            $calculated["verticalImageHeight"] = $card["height"] - $card["txtBlock"]["height"] - $card["txtBlock"]["margins"]["top"] - $card["txtBlock"]["margins"]["bottom"];
+            if ( $calculated["verticalImageHeight"] < 0 ) {
+                $calculated["verticalImageHeight"] = 0;
+            }
+        }
+        
+		$calculated["verticalTitleHeight"] = $card["height"] * 0.3 * ( 100 - $card["image"]["percentSize"] ) / 100.0;
+
+		$calculated["verticalContentsHeight"] = $card["height"] * 0.7 * ( 100 - $card["image"]["percentSize"] ) / 100.0;
+
+		$result = array_merge( $misc, $calculated );
+		return $result;
+
+	}
+
+
+
+	function getCalculatedData( $bp ) {
+
+		$calculated = array();
+
+		$calculated["currentPath"] = "../";
+		$calculated["id"] = $bp["id"];
+		$calculated["isHighlighted"] = false;
+        if ( $bp["isHighlighted"] != null ) {
+            $calculated["isHighlighted"] = $bp["isHighlighted"];
+        }
+
+		// Calculated values for the cover
+
+		$calculated["cover"] = $bp["cover"];
+		$calculated["coverAlt"] = $bp["coverAlt"];
+		$calculated["coverTitle"] = $bp["coverTitle"];
+		$calculated["cardCover"] = $bp["cardCover"];
+		$calculated["cardCoverSpecified"] = $bp["cardCover"] !== "";
+
+		// Calculated values for the title
+
+		$calculated["title"] = $bp["title"];
+		$calculated["summary"] = $bp["summary"];
+		$calculated["relativeUrl"] = $bp["rel_url"];
+
+		// Calculated values for the contents
+
+		$calculated["category"] = $bp["category"];
+		$calculated["escapedCategory"] = str_replace(" ", "_", $bp["category"]);
+		$calculated["author"] = $bp["author"];
+		$calculated["escapedAuthor"] = str_replace(" ", "_", $bp["author"]);
+		$calculated["timestamp"] = $bp["timestamp"];
+        $calculated["readTime"] = $bp["readTime"];
+
+		return $calculated;
+
+	}
+
+
+
+    function getCalculatedDataMulti( $card, $bps, $strings, $misc ){
+
+		$calculated = array();
+
+		$bpsKeys = array_keys( $bps );
+		for ( $i=0 ; $i<count($bpsKeys) ; $i++ ) {
+
+			$bp = $bps[$bpsKeys[$i]];
+
+			array_push( $calculated , $this->getCalculatedData( $bp ) );
+
+		}
+
+		return $calculated;
+
+	}
+
+
+
+	function blogAllInOne( $templateElaborationData, $specifiedDir ){
+
+		$templatesDir = "./../Templates/";
+		if ( isset( $specifiedDir ) ) {
+			$templatesDir = $specifiedDir;
+		}
+
+        $partialsDir = $templatesDir;
+        $partialsLoader = new FilesystemLoader($partialsDir,
+            [
+                "extension" => ".hbs"
+            ]
+        );
+        $handlebars = new Handlebars([
+            "loader" => $partialsLoader,
+            "partials_loader" => $partialsLoader
+        ]);
+        
+        $compiledTemplateStyle = $handlebars->render( "all-style", $templateElaborationData);
+
+        $compiledTemplateElem = $handlebars->render( "all", $templateElaborationData);
+
+        return "<style>" . $compiledTemplateStyle . "</style>" . $compiledTemplateElem;
+        
+	}
+
+
+
+	function customCardGetHtmlStartEnd( $postIds ) {
+
+		$l10nStrings = $this->customCardL10nStrings();
+
+        global $imSettings;
+		$cardStyle = $imSettings['blog']['card_style'];
+		$card = $cardStyle["card"];
+
+		// conversion of alpha from (0-255) to (0-1)
+		$card["backgroundColor"]["a"] /= 255.0;
+		$card["txtBlock"]["button"]["style"]["backgroundColor"]["a"] /= 255.0;
+
+        // conversion of style-only to (style,weight) font properties
+        // if unset set it to "normal"
+        if ( !isset( $card["txtBlock"]["name"]["style"]["font"]["weight"] ) ) {
+            $card["txtBlock"]["name"]["style"]["font"]["weight"] = "normal";
+        }
+        if ( !isset( $card["txtBlock"]["description"]["style"]["font"]["weight"] ) ) {
+            $card["txtBlock"]["description"]["style"]["font"]["weight"] = "normal";
+        }
+        if ( !isset( $card["txtBlock"]["details"]["style"]["font"]["weight"] ) ) {
+            $card["txtBlock"]["details"]["style"]["font"]["weight"] = "normal";
+        }
+        if ( !isset( $card["txtBlock"]["button"]["style"]["font"]["weight"] ) ) {
+            $card["txtBlock"]["button"]["style"]["font"]["weight"] = "normal";
+        }
+        // if set to "regular" use "normal" instead
+        if ( $card["txtBlock"]["name"]["style"]["font"]["style"] == "regular" ) {
+            $card["txtBlock"]["name"]["style"]["font"]["style"] = "normal";
+        }
+        if ( $card["txtBlock"]["description"]["style"]["font"]["style"] == "regular" ) {
+            $card["txtBlock"]["description"]["style"]["font"]["style"] = "normal";
+        }
+        if ( $card["txtBlock"]["details"]["style"]["font"]["style"] == "regular" ) {
+            $card["txtBlock"]["details"]["style"]["font"]["style"] = "normal";
+        }
+        if ( $card["txtBlock"]["button"]["style"]["font"]["style"] == "regular" ) {
+            $card["txtBlock"]["button"]["style"]["font"]["style"] = "normal";
+        }
+        // "style" cannot be "bold", use "bold" for "weight" and set "style" to "normal"
+        if ( $card["txtBlock"]["name"]["style"]["font"]["style"] == "bold" ) {
+            $card["txtBlock"]["name"]["style"]["font"]["weight"] = "bold";
+            $card["txtBlock"]["name"]["style"]["font"]["style"] = "normal";
+        }
+        if ( $card["txtBlock"]["description"]["style"]["font"]["style"] == "bold" ) {
+            $card["txtBlock"]["description"]["style"]["font"]["weight"] = "bold";
+            $card["txtBlock"]["description"]["style"]["font"]["style"] = "normal";
+        }
+        if ( $card["txtBlock"]["details"]["style"]["font"]["style"] == "bold" ) {
+            $card["txtBlock"]["details"]["style"]["font"]["weight"] = "bold";
+            $card["txtBlock"]["details"]["style"]["font"]["style"] = "normal";
+        }
+        if ( $card["txtBlock"]["button"]["style"]["font"]["style"] == "bold" ) {
+            $card["txtBlock"]["button"]["style"]["font"]["weight"] = "bold";
+            $card["txtBlock"]["button"]["style"]["font"]["style"] = "normal";
+        }
+        // "style" "bold, italic" need to be splitted in "weight" "bold" and "style" "italic"
+        if ( $card["txtBlock"]["name"]["style"]["font"]["style"] == "bold, italic" ) {
+            $card["txtBlock"]["name"]["style"]["font"]["weight"] = "bold";
+            $card["txtBlock"]["name"]["style"]["font"]["style"] = "italic";
+        }
+        if ( $card["txtBlock"]["description"]["style"]["font"]["style"] == "bold, italic" ) {
+            $card["txtBlock"]["description"]["style"]["font"]["weight"] = "bold";
+            $card["txtBlock"]["description"]["style"]["font"]["style"] = "italic";
+        }
+        if ( $card["txtBlock"]["details"]["style"]["font"]["style"] == "bold, italic" ) {
+            $card["txtBlock"]["details"]["style"]["font"]["weight"] = "bold";
+            $card["txtBlock"]["details"]["style"]["font"]["style"] = "italic";
+        }
+        if ( $card["txtBlock"]["button"]["style"]["font"]["style"] == "bold, italic" ) {
+            $card["txtBlock"]["button"]["style"]["font"]["weight"] = "bold";
+            $card["txtBlock"]["button"]["style"]["font"]["style"] = "italic";
+        }
+
+		$misc = $this->customCardMisc( "#imBlogContent .blog-cardlayout-wrapper", $cardStyle );
+
+		$miscGlobal = $this->getCalculatedGlobalData( $card, $misc );
+
+		$blogPostsData = array();
+        $highlightEnabled = $imSettings['blog']['card_style']['highlight']['mode'] != "none";
+		for ( $i = 0 ; $i < count($postIds) ; $i++) {
+			$blogPostItemId = $postIds[$i];
+			$blogPostItem = $imSettings['blog']['posts'][$blogPostItemId];
+            if ( $highlightEnabled && $i < $imSettings['blog']['card_style']['highlight']['count'] ){
+                $blogPostItem['isHighlighted'] = true;
+            }
+			array_push( $blogPostsData , $blogPostItem );
+		}
+
+		$postsCalculated = $this->getCalculatedDataMulti(
+			$card,
+			$blogPostsData,
+			$l10nStrings,
+			$misc
+		);
+
+		$templateElaborationData = array(
+			"l10n" => $l10nStrings,
+			"card" => $card,
+			"misc" => $miscGlobal,
+			"bps" => $postsCalculated
+		);
+
+		$customCardTemplatesDir = "../res/cardtemplates/blog/";
+
+		$resultHtml = $this->blogAllInOne( 
+			$templateElaborationData,
+			$customCardTemplatesDir
+		);
+
+		return "<div class=\"blog-cardlayout-wrapper\">" . $resultHtml . "</div>";
+
+	}
+
+
+
     /**
      * Show a list of posts
      *
@@ -1062,31 +1568,295 @@ class imBlog
         $urlData = $this->parseUrlArray(@$_GET);
         $isBlogHome = !isset($urlData['category']) && !isset($urlData['author']) && !isset($urlData['tag']) && !isset($urlData['month']) && !isset($urlData['search']) ? true : false;
 
-        if ($isBlogHome && $imSettings['blog']['highlight_mode'] == 'card') {
+        //if ($isBlogHome && isset($imSettings['blog']['highlight_mode'] ) && $imSettings['blog']['highlight_mode'] == 'card') {
+        if ( 
+            $isBlogHome && 
+            isset($imSettings['blog']['card_style']['highlight'] ) && 
+            isset($imSettings['blog']['card_style']['highlight']['mode'] ) && 
+            $imSettings['blog']['card_style']['highlight']['mode'] == 'card'
+        ) {
             // Highlighted posts as card - if more than max posts per page, they'll appears also in next pages...
             echo "<div class=\"imBlogHighlightedCards\">";
-            for ($i = $start; $i < min($imSettings['blog']['highlighted_count'], $end); $i++) {
-                echo $this->showPost($posts[$i]['id'], 0, true);
+
+            $l10nStrings = $this->customCardL10nStrings();
+            global $imSettings;
+            $cardStyle = $imSettings['blog']['card_style'];
+            $card = $cardStyle["card"];
+            $cardStyle['cardsPerRow'] = 1;
+            $card["height"] = $imSettings['blog']['card_style']['highlight']['height'];
+            // conversion of alpha from (0-255) to (0-1)
+            $card["backgroundColor"]["a"] /= 255.0;
+            $card["txtBlock"]["button"]["style"]["backgroundColor"]["a"] /= 255.0;
+            // conversion of style-only to (style,weight) font properties
+            // if unset set it to "normal"
+            if ( !isset( $card["txtBlock"]["name"]["style"]["font"]["weight"] ) ) {
+                $card["txtBlock"]["name"]["style"]["font"]["weight"] = "normal";
+            }
+            if ( !isset( $card["txtBlock"]["description"]["style"]["font"]["weight"] ) ) {
+                $card["txtBlock"]["description"]["style"]["font"]["weight"] = "normal";
+            }
+            if ( !isset( $card["txtBlock"]["details"]["style"]["font"]["weight"] ) ) {
+                $card["txtBlock"]["details"]["style"]["font"]["weight"] = "normal";
+            }
+            if ( !isset( $card["txtBlock"]["button"]["style"]["font"]["weight"] ) ) {
+                $card["txtBlock"]["button"]["style"]["font"]["weight"] = "normal";
+            }
+            // if set to "regular" use "normal" instead
+            if ( $card["txtBlock"]["name"]["style"]["font"]["style"] == "regular" ) {
+                $card["txtBlock"]["name"]["style"]["font"]["style"] = "normal";
+            }
+            if ( $card["txtBlock"]["description"]["style"]["font"]["style"] == "regular" ) {
+                $card["txtBlock"]["description"]["style"]["font"]["style"] = "normal";
+            }
+            if ( $card["txtBlock"]["details"]["style"]["font"]["style"] == "regular" ) {
+                $card["txtBlock"]["details"]["style"]["font"]["style"] = "normal";
+            }
+            if ( $card["txtBlock"]["button"]["style"]["font"]["style"] == "regular" ) {
+                $card["txtBlock"]["button"]["style"]["font"]["style"] = "normal";
+            }
+            // "style" cannot be "bold", use "bold" for "weight" and set "style" to "normal"
+            if ( $card["txtBlock"]["name"]["style"]["font"]["style"] == "bold" ) {
+                $card["txtBlock"]["name"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["name"]["style"]["font"]["style"] = "normal";
+            }
+            if ( $card["txtBlock"]["description"]["style"]["font"]["style"] == "bold" ) {
+                $card["txtBlock"]["description"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["description"]["style"]["font"]["style"] = "normal";
+            }
+            if ( $card["txtBlock"]["details"]["style"]["font"]["style"] == "bold" ) {
+                $card["txtBlock"]["details"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["details"]["style"]["font"]["style"] = "normal";
+            }
+            if ( $card["txtBlock"]["button"]["style"]["font"]["style"] == "bold" ) {
+                $card["txtBlock"]["button"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["button"]["style"]["font"]["style"] = "normal";
+            }
+            // "style" "bold, italic" need to be splitted in "weight" "bold" and "style" "italic"
+            if ( $card["txtBlock"]["name"]["style"]["font"]["style"] == "bold, italic" ) {
+                $card["txtBlock"]["name"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["name"]["style"]["font"]["style"] = "italic";
+            }
+            if ( $card["txtBlock"]["description"]["style"]["font"]["style"] == "bold, italic" ) {
+                $card["txtBlock"]["description"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["description"]["style"]["font"]["style"] = "italic";
+            }
+            if ( $card["txtBlock"]["details"]["style"]["font"]["style"] == "bold, italic" ) {
+                $card["txtBlock"]["details"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["details"]["style"]["font"]["style"] = "italic";
+            }
+            if ( $card["txtBlock"]["button"]["style"]["font"]["style"] == "bold, italic" ) {
+                $card["txtBlock"]["button"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["button"]["style"]["font"]["style"] = "italic";
+            }
+            $misc = $this->customCardMisc( "#imBlogContent .imBlogHighlightedCards", $cardStyle );
+            $misc['cardLayoutCardArrangement'] = "same-height";
+            $miscGlobal = $this->getCalculatedGlobalData( $card, $misc );    
+            $blogPostsData = array();
+            for ($i = $start; $i < min($imSettings['blog']['card_style']['highlight']['count'], $end); $i++) {                
+                $blogPostItem = $imSettings['blog']['posts'][$posts[$i]['id']];
+                global $imSettings;
+                if ( $i < $imSettings['blog']['card_style']['highlight']['count'] ){
+                    $blogPostItem['isHighlighted'] = true;
+                }
+                array_push( $blogPostsData , $blogPostItem );
                 $start += 1;
             }
+            $postsCalculated = $this->getCalculatedDataMulti(
+                $card,
+                $blogPostsData,
+                $l10nStrings,
+                $misc
+            );
+            $templateElaborationData = array(
+                "l10n" => $l10nStrings,
+                "card" => $card,
+                "misc" => $miscGlobal,
+                "bps" => $postsCalculated
+            );
+            $customCardTemplatesDir = "../res/cardtemplates/blog/";
+            $resultHtml = $this->blogAllInOne( 
+                $templateElaborationData,
+                $customCardTemplatesDir
+            );
+            echo $resultHtml;
+
             echo "</div>";
         }
-        else if ($isBlogHome && $imSettings['blog']['highlight_mode'] == 'slideshow' && $start == 0) {
+        else if (
+            $isBlogHome && 
+            isset($imSettings['blog']['card_style']['highlight'] ) && 
+            isset($imSettings['blog']['card_style']['highlight']['mode'] ) && 
+            $imSettings['blog']['card_style']['highlight']['mode'] == 'slideshow' && 
+            $start == 0
+        ) {
             // Highlighted posts as slideshow - they are repeated also as cards
             echo "<div class=\"imBlogHighlightedCards slideshow\">";
-            for ($i = 0; $i < min($imSettings['blog']['highlighted_count'], $count); $i++) {
-                echo $this->showPost($posts[$i]['id'], 0, true);
+
+            $l10nStrings = $this->customCardL10nStrings();
+            global $imSettings;
+            $cardStyle = $imSettings['blog']['card_style'];
+            $card = $cardStyle["card"];
+            $cardStyle['cardsPerRow'] = 1;
+            $card["type"] = "coverasbackground";
+            $card["image"]["mouseovereffect"] = NULL;
+            $card["height"] = $imSettings['blog']['card_style']['highlight']['height'];
+            $card["txtBlock"]["margins"]["bottom"] = 0;
+            $card["txtBlock"]["margins"]["left"] = 0;
+            $card["txtBlock"]["margins"]["right"] = 0;
+            $card["txtBlock"]["margins"]["top"] = 0;
+            $card["txtBlock"]["name"]["show"] = true;
+            $card["txtBlock"]["button"]["show"] = false;
+            $card["txtBlock"]["description"]["show"] = false;
+            $card["txtBlock"]["details"]["showAuthor"] = false;
+            $card["txtBlock"]["details"]["showCategory"] = false;
+            $card["txtBlock"]["details"]["showDate"] = false;
+            $card["txtBlock"]["details"]["showReadTime"] = false;
+            $card["backgroundColor"]["r"] = 0;
+            $card["backgroundColor"]["g"] = 0;
+            $card["backgroundColor"]["b"] = 0;
+            $card["backgroundColor"]["a"] = 150;
+            $card["txtBlock"]["name"]["style"]["textColor"]["r"] = 255;
+            $card["txtBlock"]["name"]["style"]["textColor"]["g"] = 255;
+            $card["txtBlock"]["name"]["style"]["textColor"]["b"] = 255;
+            $card["txtBlock"]["height"] = $card["txtBlock"]["name"]["style"]["font"]["size"] * 1.4;
+            // conversion of alpha from (0-255) to (0-1)
+            $card["backgroundColor"]["a"] /= 255.0;
+            $card["txtBlock"]["button"]["style"]["backgroundColor"]["a"] /= 255.0;
+            // conversion of style-only to (style,weight) font properties
+            // if unset set it to "normal"
+            if ( !isset( $card["txtBlock"]["name"]["style"]["font"]["weight"] ) ) {
+                $card["txtBlock"]["name"]["style"]["font"]["weight"] = "normal";
             }
-            if ($imSettings['blog']['highlighted_count'] > 1) {
-                echo "<div class=\"imBlogHighlightedBefore\">&laquo;</div>";
-                echo "<div class=\"imBlogHighlightedAfter\">&raquo;</div>";
-                echo "<script>x5engine.boot.push(function () { x5engine.blogHighlightedSlideshow.start(); });</script>";
+            if ( !isset( $card["txtBlock"]["description"]["style"]["font"]["weight"] ) ) {
+                $card["txtBlock"]["description"]["style"]["font"]["weight"] = "normal";
             }
+            if ( !isset( $card["txtBlock"]["details"]["style"]["font"]["weight"] ) ) {
+                $card["txtBlock"]["details"]["style"]["font"]["weight"] = "normal";
+            }
+            if ( !isset( $card["txtBlock"]["button"]["style"]["font"]["weight"] ) ) {
+                $card["txtBlock"]["button"]["style"]["font"]["weight"] = "normal";
+            }
+            // if set to "regular" use "normal" instead
+            if ( $card["txtBlock"]["name"]["style"]["font"]["style"] == "regular" ) {
+                $card["txtBlock"]["name"]["style"]["font"]["style"] = "normal";
+            }
+            if ( $card["txtBlock"]["description"]["style"]["font"]["style"] == "regular" ) {
+                $card["txtBlock"]["description"]["style"]["font"]["style"] = "normal";
+            }
+            if ( $card["txtBlock"]["details"]["style"]["font"]["style"] == "regular" ) {
+                $card["txtBlock"]["details"]["style"]["font"]["style"] = "normal";
+            }
+            if ( $card["txtBlock"]["button"]["style"]["font"]["style"] == "regular" ) {
+                $card["txtBlock"]["button"]["style"]["font"]["style"] = "normal";
+            }
+            // "style" cannot be "bold", use "bold" for "weight" and set "style" to "normal"
+            if ( $card["txtBlock"]["name"]["style"]["font"]["style"] == "bold" ) {
+                $card["txtBlock"]["name"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["name"]["style"]["font"]["style"] = "normal";
+            }
+            if ( $card["txtBlock"]["description"]["style"]["font"]["style"] == "bold" ) {
+                $card["txtBlock"]["description"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["description"]["style"]["font"]["style"] = "normal";
+            }
+            if ( $card["txtBlock"]["details"]["style"]["font"]["style"] == "bold" ) {
+                $card["txtBlock"]["details"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["details"]["style"]["font"]["style"] = "normal";
+            }
+            if ( $card["txtBlock"]["button"]["style"]["font"]["style"] == "bold" ) {
+                $card["txtBlock"]["button"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["button"]["style"]["font"]["style"] = "normal";
+            }
+            // "style" "bold, italic" need to be splitted in "weight" "bold" and "style" "italic"
+            if ( $card["txtBlock"]["name"]["style"]["font"]["style"] == "bold, italic" ) {
+                $card["txtBlock"]["name"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["name"]["style"]["font"]["style"] = "italic";
+            }
+            if ( $card["txtBlock"]["description"]["style"]["font"]["style"] == "bold, italic" ) {
+                $card["txtBlock"]["description"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["description"]["style"]["font"]["style"] = "italic";
+            }
+            if ( $card["txtBlock"]["details"]["style"]["font"]["style"] == "bold, italic" ) {
+                $card["txtBlock"]["details"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["details"]["style"]["font"]["style"] = "italic";
+            }
+            if ( $card["txtBlock"]["button"]["style"]["font"]["style"] == "bold, italic" ) {
+                $card["txtBlock"]["button"]["style"]["font"]["weight"] = "bold";
+                $card["txtBlock"]["button"]["style"]["font"]["style"] = "italic";
+            }
+            $misc = $this->customCardMisc( "#imBlogContent .imBlogHighlightedCards", $cardStyle );
+            $misc['cardLayoutCardArrangement'] = "slideshow";
+            $misc['cardContentLayout'] = "cover-as-background";
+            $miscGlobal = $this->getCalculatedGlobalData( $card, $misc );    
+            $blogPostsData = array();
+            for ($i = 0; $i < min($imSettings['blog']['card_style']['highlight']['count'], $count); $i++) {
+                $blogPostItem = $imSettings['blog']['posts'][$posts[$i]['id']];
+                global $imSettings;
+                if ( $i < $imSettings['blog']['card_style']['highlight']['count'] ){
+                    $blogPostItem['isHighlighted'] = true;
+                }
+                array_push( $blogPostsData , $blogPostItem );
+            }
+            $postsCalculated = $this->getCalculatedDataMulti(
+                $card,
+                $blogPostsData,
+                $l10nStrings,
+                $misc
+            );
+            $templateElaborationData = array(
+                "l10n" => $l10nStrings,
+                "card" => $card,
+                "misc" => $miscGlobal,
+                "bps" => $postsCalculated
+            );
+            $customCardTemplatesDir = "../res/cardtemplates/blog/";
+            $resultHtml = $this->blogAllInOne( 
+                $templateElaborationData,
+                $customCardTemplatesDir
+            );
+            echo $resultHtml;
+            if ($imSettings['blog']['card_style']['highlight']['count'] > 1) {
+                echo <<<END
+                    <script>
+                        x5engine.boot.push(
+                            function () { 
+                                const swiper = new Swiper( '#imBlogContent .imBlogHighlightedCards .swiper', {
+                                    a11y: {
+                                        prevSlideMessage: x5engine.l10n.get('blog_post_prev', 'Previous blog post'),
+                                        nextSlideMessage: x5engine.l10n.get('blog_post_next', 'Next blog post')
+                                    },
+                                    direction: 'horizontal',
+                                    loop: true,
+                                    autoplay: true,
+                                    slidesPerView: 1,
+                                    pagination: {
+                                        el: '#imBlogContent .imBlogHighlightedCards .swiper-pagination',
+                                    },
+                                    navigation: {
+                                        nextEl: '#imBlogContent .imBlogHighlightedCards .swiper-button-next',
+                                        prevEl: '#imBlogContent .imBlogHighlightedCards .swiper-button-prev',
+                                    },
+                                    scrollbar: {
+                                        el: '#imBlogContent .imBlogHighlightedCards .swiper-scrollbar',
+                                    },
+                                });
+                            }
+                        );
+                    </script>
+END;
+            }
+
             echo "</div>";
         }
+
+        //Loading posts 
+        $postIds = array();
         for ($i = $start; $i < $end; $i++) {
-            echo $this->showPost($posts[$i]['id'], 0);
+            array_push( $postIds , $posts[$i]['id'] );
         }
+        $resultHtml = $this->customCardGetHtmlStartEnd( $postIds );
+        echo( $resultHtml );
+
+
 
         echo "<script>\n";
         echo "\tx5engine.boot.push(function() {\n";
@@ -1140,7 +1910,7 @@ class imBlog
     /**
      * Find the post in a category
      *
-     * @param strmg $category the category ID
+     * @param string $category the category ID
      *
      * @return void
      */
@@ -1159,7 +1929,7 @@ class imBlog
     /**
      * Find the posts by an author
      *
-     * @param strmg $author the author ID
+     * @param string $author the author ID
      *
      * @return void
      */
@@ -1426,7 +2196,8 @@ class imBlog
             rsort($months);
             echo "<ul>";
             for ($i = 0; $i < count($months) && $i < $n; $i++) {
-                echo "<li><a href=\"?month=" . urlencode($months[$i]) . "\">" . (strlen($months[$i]) == 6 ? substr($months[$i], 4, 2) . "/" . substr($months[$i], 0, 4) : $months[$i]) . "</a></li>";
+                $formattedDate = strlen($months[$i]) == 6 ? formatDate(DateTimeImmutable::createFromFormat("d/m/Y", "01/" . substr($months[$i], 4, 2) . "/" . substr($months[$i], 0, 4)), false, false) : $months[$i];
+                echo "<li><a href=\"?month=" . urlencode($months[$i]) . "\">" . $formattedDate . "</a></li>";
             }
             echo "</ul>";
         }
@@ -1544,7 +2315,7 @@ class Configuration
             self::$privateArea = new imPrivateArea();
             if (isset($imSettings['access']['dbid'])) {
                 $db = getDbData($imSettings['access']['dbid']);
-                self::$privateArea->setDbData(ImDb::from_db_data($db), $imSettings['access']['dbtable']);
+                self::$privateArea->setDbData(ImDb::from_db_data($db), $imSettings['access']['dbtable'], $imSettings['access']['datadbtable']);
             }
         }
         return self::$privateArea;
@@ -1674,7 +2445,7 @@ class X5Captcha {
           <body style=\"margin: 0; padding: 0; border-collapse: collapse;\">";
 
         for ($i = 0; $i < strlen($sCode); $i++) {
-            $text .= "<img style=\"margin:0; padding:0; border: 0; border-collapse: collapse; width: 32px; height: 32px; position: absolute; top: 0; left: " . (32 * $i) . "px;\" src=\"imcpa_".$this->nameList[substr($sCode, $i, 1)].".gif\" alt=\"\" width=\"32\" height=\"32\">";
+            $text .= "<img style=\"margin:0; padding:0; border: 0; border-collapse: collapse; width: 32px; height: 32px; position: absolute; top: 0; inset-inline-start: " . (32 * $i) . "px;\" src=\"imcpa_".$this->nameList[substr($sCode, $i, 1)].".gif\" alt=\"\" width=\"32\" height=\"32\">";
         }
 
         $text .= "</body></html>";
@@ -1692,12 +2463,23 @@ class X5Captcha {
         if ($ans == "") {
             return '-1';
         }
-        for ($i = 0; $i < strlen($code); $i++) {
+        $correct = true;
+        $len = strlen($code);
+        for ($i = 0; $i < $len && $correct; $i++) {
             if ($this->charList[substr(strtoupper($code), $i, 1)] != substr(strtoupper($ans), $i, 1)) {
-                return '-1';
+                $correct = false;
             }
         }
-        return '0';
+        if (!$correct && Configuration::getSettings()['general']['rtl']) {
+            // if the page is RTL, consider valid also the reversed answer
+            $correct = true;
+            for ($i = 0; $i < $len && $correct; $i++) {
+                if ($this->charList[substr(strtoupper($code), $i, 1)] != substr(strtoupper($ans), $len - $i - 1, 1)) {
+                    $correct = false;
+                }
+            }
+        }
+        return $correct ? '0' : '-1';
     }
 }
 
@@ -1770,471 +2552,7 @@ class Router
         }
     }
 }
-class CartRouter
-{
-    public static function handleRoute($params)
-    {
-        $router = new Router();
 
-
-        $router->addRoute(function () {
-            return $_GET['action'] == 'sndrdr' && isset($_POST['orderData']);
-        }, function ($params) {
-            header('Content-type: application/json');
-            echo json_encode($params['cart']->sendOrder($_POST['orderData'], $params['notifier']));
-        });
-
-
-        $router->addRoute(function () {
-            return $_GET['action'] == 'prddnvl';
-        }, function ($params) {
-            header('Content-type: application/json');
-            echo json_encode(array(
-                'status' => 'ok',
-                'data' => $params['cart']->get_products_dynamic_availability()
-            ));
-        });
-
-        $router->addRoute(function () {
-            return $_GET['action'] == 'dscprd';
-        }, function ($params) {
-            header('Content-type: application/json');
-            echo json_encode(array(
-                'status' => 'ok',
-                'data' => $params['cart']->get_discounted_products()
-            ));
-        });
-
-        $router->addRoute(function () {
-            return $_GET['action'] == 'srcpg';
-        }, function ($params) {
-            $cart = $params['cart'];
-            header('Content-type: application/json');
-            echo json_encode(array(
-                'status' => 'ok',
-                'data' => array(
-                    'discountedProducts' => $cart->get_discounted_products(),
-                    'availabilityData' => $cart->get_products_dynamic_availability()
-                )
-            ));
-        });
-
-
-        $router->handleRoute($params);
-    }
-
-    private static function checkServerToken($server_token)
-    {
-        if (($headers = imRequestHeaders()) !== false) {
-            foreach ($headers as $key => $value) {
-                if (strtolower($key) == 'x-incomedia-wsx5-token') {
-                    return $value == $server_token;
-                }
-            }
-        }
-        return false;
-    }
-
-    private static function getPublicFolder()
-    {
-        global $imSettings;
-        $targetFolder = pathCombine(array('../', $imSettings['general']['public_folder']));
-        // If the folder doesn't exists, try to create it
-        if ($targetFolder != "" && $targetFolder != "/" && $targetFolder != "." && $targetFolder != ".." && $targetFolder != "./" && !file_exists($targetFolder)) {
-            @mkdir($targetFolder, 0777, true);
-        }
-        if (is_dir($targetFolder)) {
-            return $targetFolder;
-        }
-        return false;
-    }
-}
-
-
-
-
-/**
- * Provide support for sending and saving a cart order as well as checking the coupon codes
- */
-class ImCart {
-
-
-    /**
-     * Save the order data with the following structure:
-     *    "orderNo": "",
-     *    "userInvoiceData": {},
-     *    "userShippingData": {},
-     *    "shipping": {
-     *        "name": "",
-     *        "description": "",
-     *        "email_text": "",
-     *        "price": "",
-     *        "rawPrice":
-     *        "vat":""
-     *        "rawVat":
-     *    },
-     *    "payment": {
-     *        "name": "",
-     *        "description":"",
-     *        "price": "",
-     *        "rawPrice":""
-     *        "email_text": "",
-     *        "vat": "",
-     *        "rawVat":""
-     *        "html": ""
-     *    },
-     *    "products": [{
-     *        "id" : "",
-     *        "name": "",
-     *        "description": "",
-     *        "option": "",
-     *        "suboption": "",
-     *        "rawSinglePrice": "",
-     *        "rawPrice": "",
-     *        "rawFullPrice": "",
-     *        "singlePrice": "",
-     *        "singleFullPrice": "",
-     *        "price": "",
-     *        "fullPrice": "",
-     *        "quantity": "",
-     *        "vat": ""
-     *    }],
-     *    "rawTotalPrice": "",
-     *    "rawTalVat": "",
-     *    "totalPrice": "",
-     *    "totalVat": "",
-     *    "currency": ""
-     * @var array
-     */
-    public $orderData;
-
-
-    private $priceFormat = array(
-        'decimals' => 2,
-        'decimal_sep' => '.',
-        'thousands_sep' => '',
-        'currency_to_right' => true,
-        'currency_separator' => ' ',
-        'currency_symbol' => '€',
-        'currency_code' => 'EUR',
-        'currency_name' => 'Euro',
-        'show_zero_as' => '0'
-    );
-
-    /**
-     * Contains the cart settings
-     *
-     * @var array
-     */
-    public $settings = array(
-        'orders_table' => 'orders',
-        'shipping_addresses_table' => 'shipping_addresses',
-        'invoice_addresses_table' => 'invoice_addresses',
-        'products_table' => 'products',
-        'dynamicproducts_table' => 'dynamicproducts',
-        'attachments_table' => 'orders_attachments',
-        'force_sender' => false,
-        'email_opening' => '',
-        'email_closing' => '',
-        'email_payment_opening' => '',
-        'email_payment_closing' => '',
-        'email_physical_shipment_opening' => '',
-        'email_physical_shipment_closing' => '',
-        'email_digital_shipment_opening' => '',
-        'email_digital_shipment_closing' => '',
-        'order_data_cookie_prefix' => 'WSX5_ORDER_ENC_DATA_',
-        'useCSV' => false,
-        'header_bg_color' => '#FFD34F',
-        'header_text_color' => '#404040',
-        'cell_bg_color' => '#FFFFFF',
-        'cell_text_color' => '#000000',
-        'availability_reduction_type' => 1, // Default is reducing the availability when the order is set
-        'border_color' => '#D3D3D3',
-        'owner_email' => '',
-        'vat_type' => 'none'
-    );
-
-    /**
-     * The paths to the email templates
-     *
-     * @var array
-     */
-    private $emailTemplates = array(
-        "order_html" => "../res/emailtemplates/order.html.template.php",
-        "order_text" => "../res/emailtemplates/order.text.template.php",
-        "physical_shipment_text" => "../res/emailtemplates/physicalshipping.text.template.php",
-        "physical_shipment_html" => "../res/emailtemplates/physicalshipping.html.template.php",
-        "digital_shipment_text" => "../res/emailtemplates/digitalshipping.text.template.php",
-        "digital_shipment_html" => "../res/emailtemplates/digitalshipping.html.template.php",
-        "address_csv" => "../res/emailtemplates/address.csv.template.php",
-        "products_csv" => "../res/emailtemplates/products.csv.template.php"
-    );
-
-    /**
-     * Format a number basing on the cart settings
-     *
-     * @param  integer $number
-     * @param  string  $currency The currency sign to use. Leave empty to set it automatically
-     *
-     * @return string
-     */
-    public function toCurrency($number, $currency = "")
-    {
-        if (strlen($currency) == 0) {
-            $settings = Configuration::getSettings();
-            $currency = $settings['ecommerce']['database']['currency'];
-        }
-        return number_format($number, 2) . $currency;
-    }
-
-    /**
-     * Format a number basing on the price format settings
-     *
-     * @param  float $price
-     *
-     * @return string
-     */
-    private function applyPriceFormat($price)
-    {
-        $frmt = $this->priceFormat;
-        if($price == 0 && $frmt['show_zero_as']){
-            return $frmt['show_zero_as'];
-        }
-        $priceString = number_format($price, $frmt['decimals'], $frmt['decimal_sep'], $frmt['thousands_sep']);
-        return $frmt['currency_to_right'] ? $priceString . $frmt['currency_separator'] . $frmt['currency_symbol'] : $frmt['currency_symbol'] . $frmt['currency_separator'] . $priceString;
-    }
-
-    public function setSettings($data)
-    {
-        // Copy the settings preserving the default data when a key is missing
-        foreach ($data as $key => $value) {
-            $this->settings[$key] = $value;
-        }
-    }
-
-    public function setOrderData($data)
-    {
-        // Sanitize the form data
-        if (isset($data['userInvoiceData'])) {
-            foreach ($data['userInvoiceData'] as $key => $value) {
-                if (isset($value['value']) && isset($value['label'])) {
-                    $data['userInvoiceData'][$key] = array(
-                        "id" => strip_tags($key),
-                        "label" => strip_tags($value['label']),
-                        "value" => strip_tags($value['value'])
-                    );
-                }
-            }
-        }
-        if (isset($data['userShippingData'])) {
-            foreach ($data['userShippingData'] as $key => $value) {
-                if (isset($value['value']) && isset($value['label'])) {
-                    $data['userShippingData'][$key] = array(
-                        "id" => strip_tags($key),
-                        "label" => strip_tags($value['label']),
-                        "value" => strip_tags($value['value'])
-                    );
-                }
-            }
-        }
-        $this->orderData = $data;
-    }
-
-    public function applyFilter($obj, $filter)
-    {
-        $filteredObj = array();
-        foreach ($obj as $key => $value) {
-            if (!$filter[$key]) {
-                $filteredObj[$key] = $value;
-            } else if ($filter[$key]['type'] == 'setFromKey') {
-                $filteredObj[$key] = $obj[$filter[$key]['key']];
-            } else if ($filter[$key]['type'] == 'addKey') {
-                $filteredObj[$key] = $value;
-                $filteredObj[$key][$filter[$key]['key']] = $filter[$key]['value'];
-            }
-        }
-        return $filteredObj;
-    }
-
-    public function get_discounted_products()
-    {
-        $discounted_prds_regardless_of_coupon_and_quantity = array();
-        $discounted_prds_because_of_quantity = array();
-        foreach ($this->products as $prd_id => $prd_info) {
-            $is_discounted_regardless_of_coupon_and_quantity = false;
-            if (isset($prd_info['fixedDiscount'])) {
-                $d = $prd_info['fixedDiscount'];
-                $start_date_check = !isset($d['startDate']) || time() > $d['startDate'];
-                $end_date_check = !isset($d['endDate']) || time() < $d['endDate'];
-                $coupon_check = !isset($d['coupon']);
-                if ($start_date_check && $end_date_check && $coupon_check) {
-                    $is_discounted_regardless_of_coupon_and_quantity = true;
-                    $discounted_prds_regardless_of_coupon_and_quantity[] = $prd_id;
-                }
-            }
-            if (isset($prd_info['quantityDiscounts']) && !$is_discounted_regardless_of_coupon_and_quantity) {
-                $discounted_prds_because_of_quantity[] = $prd_id;
-            }
-        }
-        return array(
-            'regardlessOfCouponAndQuantity' => $discounted_prds_regardless_of_coupon_and_quantity,
-            'becauseOfQuantity' => $discounted_prds_because_of_quantity
-        );
-    }
-
-
-    /**
-     * Send the order email
-     *
-     * @param boolean $isOwner true to send the owner's email
-     * @param string $from from address
-     * @param string $to to address
-     * @param Array $filters filter object used to change orderData and settings
-     *
-     * @return boolean
-     */
-    private function sendOrderEmail($isOwner, $from, $replyTo, $to, $filters = array())
-    {
-        global $imSettings;
-        global $ImMailer;
-
-        $orderData = $filters['order'] ? $this->applyFilter($this->orderData, $filters['order']) : $this->orderData;
-        $settings = $filters['settings'] ? $this->applyFilter($this->settings, $filters['settings']) : $this->settings;
-
-        // Text Message
-        $template = new Template($this->emailTemplates["order_text"]);
-        $template->orderData = $orderData;
-        $template->settings = $settings;
-        $template->l10n = Configuration::getLocalizations();
-        $template->showCustomerMessages = !$isOwner;
-        $txtMsg = $template->render();
-
-        // HTML Message
-        $template = new Template($this->emailTemplates["order_html"]);
-        $template->orderData = $orderData;
-        $template->settings = $settings;
-        $template->l10n = Configuration::getLocalizations();
-        $template->showCustomerMessages = !$isOwner;
-        $htmlMsg = $template->render();
-
-        $attachments = array();
-        
-        // If an order attached file exists, attach it to the order email
-        if (array_key_exists("Attachment", $this->orderData['userInvoiceData']) && $this->orderData['userInvoiceData']['Attachment']['value'] != "") {
-            $attachment = $this->orderData['userInvoiceData']['Attachment']['value'];
-            // Strip the attachment name removing the timestamp prefix
-            $splittedAttachment = explode("_", $attachment, 2);
-            $attachmentName = $splittedAttachment[1];
-            $attachmentPath = pathCombine(array("../", $this->publicFolder, $attachment));
-            $attachments[] = array("name" => $attachmentName, "content" => @file_get_contents($attachmentPath), "mime" => @mime_content_type($attachmentPath));
-
-            // Delete the file if no database is selected for ecommerce purposes
-            if (!isset($imSettings['ecommerce']['database']))
-                @unlink($attachmentPath);
-        }
-        
-        if ($this->settings['useCSV'] && $isOwner) {
-            // Invoice address CSV
-            $template = new Template($this->emailTemplates["address_csv"]);
-            $template->address = $this->orderData['userInvoiceData'];
-            $userDataCSV = $template->render();
-
-            // Shipping address CSV
-            if (isset($this->orderData['userShippingData'])) {
-                $template = new Template($this->emailTemplates["address_csv"]);
-                $template->address = $this->orderData['userShippingData'];
-                $shippingDataCSV = $template->render();
-            }
-
-            // Order Data CSV
-            $template = new Template($this->emailTemplates["products_csv"]);
-            $template->orderData = $this->orderData;
-            $template->settings = $this->settings;
-            $template->l10n = Configuration::getLocalizations();
-            $orderDataCSV = $template->render();
-
-            // Attach the CSV files
-            $txtMsg .= "\n" . $userDataCSV . "\n";
-            if (isset($shippingDataCSV)) {
-                $txtMsg .= "\n" . $shippingDataCSV . "\n";
-                $attachments[] = array("name" => "shipping_data.csv", "content" => $shippingDataCSV, "mime" => "text/csv");
-            }
-            $txtMsg .= "\n" . $orderDataCSV;
-            $attachments[] = array("name" => "user_data.csv", "content" => $userDataCSV, "mime" => "text/csv");
-            $attachments[] = array("name" => "order_data.csv", "content" => $orderDataCSV, "mime" => "text/csv");
-        }
-        if ($isOwner) {
-            return $ImMailer->send($from, $replyTo, $to, l10n('cart_order_no') . " " . $this->orderData['orderNo'], $txtMsg, $htmlMsg, $attachments);
-        } else {
-            return $ImMailer->send($from, $replyTo, $to, str_replace('[ORDER_ID]', $this->orderData['orderNo'], l10n('cart_email_obj_order')), $txtMsg, $htmlMsg, $attachments);
-        }
-    }
-
-    /**
-     * Send the order email to the owner
-     *
-     * @return boolean
-     */
-    public function sendOwnerEmail()
-    {
-        global $imSettings;
-        $replyTo = '';
-        if (isset($this->orderData['userInvoiceData']['Email']['value'])) {
-            $replyTo = $this->orderData['userInvoiceData']['Email']['value'];
-        }
-        return $this->sendOrderEmail(true, $imSettings['general']['common_email_sender_addres'], $replyTo, $this->settings['owner_email']);
-    }
-
-    /**
-     * Send the order email to the customer
-     *
-     * @return boolean
-     */
-    public function sendCustomerEmail()
-    {
-        global $imSettings;
-        $data = $this->getEncodedOrderDataAndCleanIt();
-        $filters = isset($data) && is_string($data) && strlen($data) > 0 ? array(
-            'order' => array(
-                'payment' => array(
-                    'type' => 'addKey',
-                    'key' => 'html',
-                    'value' => '<a style="' . $this->settings['mail_btn_css'] . '" href="' . $this->settings['page_url'] . '?paynow=' . $data . '">' . l10n('cart_paynow_button', 'Pay now!') . '</a>'
-                )
-            )
-        ) : array();
-        return $this->sendOrderEmail(false, $imSettings['general']['common_email_sender_addres'], $this->settings['owner_email'], $this->orderData['userInvoiceData']['Email']['value'], $filters);
-    }
-
-
-    private function getEncodedOrderDataAndCleanIt()
-    {
-        $cookie_name = $this->settings['order_data_cookie_prefix'] . $this->orderData['orderNo'];
-        $value = isset($this->orderData['payment']['enc']) ? $this->orderData['payment']['enc'] : im_get_cookie($cookie_name);
-        im_set_cookie($cookie_name, '', 1);
-        return $value;
-    }
-
-    public function setEncodedOrderData()
-    {
-        im_set_cookie($this->settings['order_data_cookie_prefix'] . $this->orderData['orderNo'], $this->orderData['payment']['enc']);
-    }
-
-    public function setPriceFormatData($array)
-    {
-        $this->priceFormat = $array;
-    }
-
-    public function sendOrder($orderData, $notifier)
-    {
-        $orderNo = $orderData['orderNo'];
-        $this->setOrderData($orderData);
-        $this->setEncodedOrderData();
-            $this->sendOwnerEmail();
-            $this->sendCustomerEmail();
-            return array("status" => "ok", "orderNumber" => $orderNo);
-    }
-}
 
 
 
@@ -2883,7 +3201,7 @@ class MySQLDriver implements DatabaseAccess
                             if ($type == "int") {
                                 $fixAutoIncrement = false;
                                 // WSX5-2950: This fix some situations where an existing field lost his "auto increment" property. If there is a row with this field set to 0, update it to the next highest value.
-                                if ($value["auto_increment"] && !strpos($act_field["Extra"], "auto_increment")) {
+                                if (isset($value["auto_increment"]) && $value["auto_increment"] && !strpos($act_field["Extra"], "auto_increment")) {
                                     $fixAutoIncrement = true;
                                     $q = mysql_query("SELECT * FROM `" . $this->db_name . "`.`" . $name . "` WHERE `" . $key . "` = 0", $this->conn);
                                     $res = mysql_num_rows($q);
@@ -3204,11 +3522,15 @@ class MySQLiDriver implements DatabaseAccess
                             $newLenght = substr(substr($value['type'], strpos($value['type'], "(") + 1), 0, -1);
                         }
                         if ($act_field["Field"] == $key) {
+                            // Check "null" and "more" configuration
+                            $explicitlyNull = isset($value['more']) && strtolower($value['more']) == 'null';
+                            $explicitlyNotNull = (isset($value['more']) && strtolower($value['more']) == 'not null') || !isset($value['null']) || !$value['null'];
+
                             // Check if some actual "int" fields increment their length: if yes, consider them in the alter query
                             if ($type == "int") {
                                 $fixAutoIncrement = false;
                                 // WSX5-2950: This fix some situations where an existing field lost his "auto increment" property. If there is a row with this field set to 0, update it to the next highest value.
-                                if ($value["auto_increment"] && !strpos($act_field["Extra"], "auto_increment")) {
+                                if (isset($value["auto_increment"]) && $value["auto_increment"] && !strpos($act_field["Extra"], "auto_increment")) {
                                     $fixAutoIncrement = true;
                                     $q = $this->db->query("SELECT * FROM `" . $this->db_name . "`.`" . $name . "` WHERE `" . $key . "` = 0");
                                     if ($q->num_rows > 0) {
@@ -3243,6 +3565,17 @@ class MySQLiDriver implements DatabaseAccess
                                 $modify .= " CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci";
                                 $modify .= (!isset($value['null']) || !$value['null'] ? " NOT NULL" : "");
                                 $modify .= (isset($value['unique']) && $value['unique'] ? " UNIQUE" : "");
+                                $modify .= (isset($value['more']) ? " " . $value['more'] : "");
+                                $qfields[] = $modify;
+                                $alterTable = true;
+                            }
+                            // Check for "null" and "more" configuration changes
+                            else if ((strtolower($act_field['Null']) == 'no' && $explicitlyNull) || (strtolower($act_field['Null']) == 'yes' && $explicitlyNotNull)) {
+                                $modify = " MODIFY `" . $key . "` " . $value['type'];
+                                $modify .= ($value['type'] == 'TEXT' || $value['type'] == 'MEDIUMTEXT' ? " CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci" : "");
+                                $modify .= (!isset($value['null']) || !$value['null'] ? " NOT NULL" : "");
+                                $modify .= (isset($value['unique']) && $value['unique'] ? " UNIQUE" : "");
+                                $modify .= (isset($value['auto_increment']) && $value['auto_increment'] ? " AUTO_INCREMENT" : "");
                                 $modify .= (isset($value['more']) ? " " . $value['more'] : "");
                                 $qfields[] = $modify;
                                 $alterTable = true;
@@ -3925,13 +4258,13 @@ class Analytics
         $data = array();
 		// First create the empty array
 		while ($curDate <= $endDate) {
-			$data[$curDate->format("Y-m-d")] = 0;
+			$data[formatDate($curDate)] = 0;
 			$curDate->modify("+1 day");
 		}
         if (is_array($results)) {
             // Then fill it with the known data
             foreach ($results as $entry) {
-                $data[$entry['date']] = $entry['count'];
+                $data[formatDate(DateTimeImmutable::createFromFormat("Y-m-d", $entry['date']))] = $entry['count'];
             }
         }
         return $data;
@@ -3964,13 +4297,13 @@ class Analytics
         $data = array();
 		// First create the empty array
 		while ($curDate <= $endDate) {
-			$data[$curDate->format("Y-m-d")] = 0;
+			$data[formatDate($curDate)] = 0;
 			$curDate->modify("+1 day");
 		}
         if (is_array($results)) {
             // Then fill it with the known data
             foreach ($results as $entry) {
-                $data[$entry['date']] = $entry['count'];
+                $data[formatDate(DateTimeImmutable::createFromFormat("Y-m-d", $entry['date']))] = $entry['count'];
             }
         }
         return $data;
@@ -4004,13 +4337,13 @@ class Analytics
         $data = array();
 		// First create the empty array
 		while ($curDate <= $endDate) {
-			$data[$curDate->format("Y-m-d")] = 0;
+			$data[formatDate($curDate)] = 0;
 			$curDate->modify("+1 day");
 		}
         if (is_array($results)) {
             // Then fill it with the known data
             foreach ($results as $entry) {
-                $data[$entry['date']] += $entry['count'];
+                $data[formatDate(DateTimeImmutable::createFromFormat("Y-m-d", $entry['date']))] += $entry['count'];
             }
         }
         return $data;
@@ -4223,6 +4556,32 @@ class ImForm
     }
 
     /**
+     * Checks if the file extension is one of the accepted
+     * @param  string  $fileName   The name of the file
+     * @param  mixed   $extensions The accepted extensions
+     * @return boolean True if the file extension is accepted, false otherwise
+     */
+    function acceptedExtension($fileName, $extensions)
+    {
+        if (is_string($extensions)) {
+            $extensions = strlen($extensions) ? explode(",", trim($extensions, ",")) : array();
+        }
+        if (count($extensions) === 0) return true;
+
+        $fileName = strtolower($fileName);
+        foreach ($extensions as $extension) {
+            // WSXELE-738: Fix extensions separated by spaces
+            $extension = strtolower(trim($extension));
+
+            $extLen = strlen($extension) + 1;
+            if (strlen($fileName) > $extLen && substr($fileName, -$extLen) === "." . $extension) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Set a file field
      * 
      * @param string  $label      The field label
@@ -4236,38 +4595,48 @@ class ImForm
      */
     function setFile($label, $value, $folder = "", $dbname = "", $extensions = array(), $maxsize = 0)
     {
-        if (is_string($extensions))
-            $extensions = strlen($extensions) ? explode(",", trim(strtolower($extensions), ",")) : array();
 
-        // WSXELE-738: Fix extensions separated by spaces
-        for ($i = 0; $i < count($extensions); $i++) { 
-            $extensions[$i] = trim($extensions[$i]);
+        if (!is_array($value['tmp_name'])){
+            foreach($value as $key => $v){
+                $value[$key] = array($v);
+            }
         }
 
-        $exists = file_exists($value['tmp_name']);
-        if (!$exists)
-            return 1; // If the file doesn't exists it means that it was not uploaded
-        
-        $fileExtension = strtolower(substr($value['name'], strpos($value['name'], ".") + 1));
-        $extension = (count($extensions) == 0 || in_array($fileExtension, $extensions));
-        $size = ($maxsize == 0 || $maxsize >= $value['size']);
+        $file_count = count($value['tmp_name']);
+        for ($i=0; $i<$file_count; $i++) {
 
-        if (!$extension)
-            return -2;
-        if (!$size)
-            return -3;
+            if (!file_exists($value['tmp_name'][$i])){
+                return 1; // If the file doesn't exists it means that it was not uploaded
+            }
+
+            $extension = $this->acceptedExtension($value['name'][$i], $extensions);
+            if (!$extension)
+                return -2;
+
+            $size = ($maxsize == 0 || $maxsize >= $value['size'][$i]);
+            if (!$size)
+                return -3;
+
+        }
             
         if ($folder != "" && substr($folder, 0, -1) != "/")
             $folder .= "/";
-        $this->files[] = array(
-            "value" => $value,
-            "label" => $label,
-            "dbname" => $dbname,
-            "folder" => $folder,
-            // Save the file content to set is as available for every istance in the class
-            // This because after calling move_uploaded_file the temp file is not available anymore
-            "content" => @file_get_contents($value['tmp_name'])
-        );
+
+
+        for ($i=0; $i<$file_count; $i++) {
+            $newValue = array ();
+            foreach($value as $key => $v){
+                $newValue[$key] = $v[$i];
+            }
+            $this->files[] = array(
+                "value" => $newValue,
+                "label" => $label,
+                "dbname" => $dbname !== "" ? $dbname."_".$i : $dbname,
+                "folder" => $folder,
+                "content" => @file_get_contents($value['tmp_name'][$i])
+            );
+        }
+
         return 0;
     }
 
@@ -4418,6 +4787,8 @@ class ImForm
     function mailToOwner($from, $replyTo, $to, $subject, $text, $csv = false)
     {
         global $ImMailer;
+        global $imSettings;
+        $rtl = $imSettings['general']['rtl'];
 
         //Form Data
         $txtData = strip_tags($text);
@@ -4426,7 +4797,7 @@ class ImForm
         $htmData = nl2br($text);
         if (strlen($htmData))
             $htmData .= "\n<br><br>\n";
-        $htmData .= "<table border=0 width=\"100%\">\r\n";
+        $htmData .= "<table border=0 width=\"100%\"" . ($rtl ? " dir=\"rtl\"": "") . ">\r\n";
         $csvHeader = "";
         $csvData = "";
         $firstField = true;
@@ -4442,16 +4813,22 @@ class ImForm
                 //
                 // This field is a classic form field
                 // 
-                $label = ($field['label'] != "" ? $field['label'] . ": " : "");
+                $label = ($field['label'] != "" ? ($rtl ? " :" . $field['label'] : $field['label'] . ": ") : "");
                 if (is_array($field['value'])) {
-                    $txtData .= $label . implode(", ", $field['value']) . "\r\n";
+                    if ($rtl)
+                        $txtData .= implode(", ", $field['value']) . $label . "\r\n";
+                    else
+                        $txtData .= $label . implode(", ", $field['value']) . "\r\n";
                     $htmData .= "<tr valign=\"top\"><td width=\"25%\" style=\"[email:contentStyle]\"><b>" . $label . "</b></td><td style=\"[email:contentStyle]\">" . implode(", ", $field['value']) . "</td></tr>\r\n";
                     if ($csv) {
                         $csvHeader .= $field['label'] . ";";
                         $csvData .= implode(", ", $field['value']) . ";";
                     }
                 } else {        
-                    $txtData .= $label . $field['value'] . "\r\n";
+                    if ($rtl)
+                        $txtData .= $field['value'] . $label . "\r\n";
+                    else
+                        $txtData .= $label . $field['value'] . "\r\n";
                     // Is it an email?
                     if (preg_match('/^([a-z0-9])(([-a-z0-9._])*([a-z0-9]))*\@([a-z0-9])' . '(([a-z0-9-])*([a-z0-9]))+' . '(\.([a-z0-9])([-a-z0-9_-])?([a-z0-9])+)+$/i', $field['value'])) {
                         $htmData .= "<tr valign=\"top\"><td width=\"25%\" style=\"[email:contentStyle]\"><b>" . str_replace(array("\\'", '\\"'), array("'", '"'), $label) . "</b></td><td style=\"[email:contentStyle]\"><a href=\"mailto:" . $field['value'] . "\">". $field['value'] . "</a></td></tr>\r\n";
@@ -4504,6 +4881,8 @@ class ImForm
     function mailToCustomer($from, $replyTo, $to, $subject, $text, $csv = false)
     {
         global $ImMailer;
+        global $imSettings;
+        $rtl = $imSettings['general']['rtl'];
 
         //Form Data
         $txtData = strip_tags($text);
@@ -4512,12 +4891,10 @@ class ImForm
         $htmData = nl2br($text);
         if (strlen($htmData))
             $htmData .= "\n<br><br>\n";
-        $csvHeader = "";
-        $csvData = "";
         $firstField = true;
         
         if ($csv) {
-            $htmData .= "<table border=0 width=\"100%\">\r\n";
+            $htmData .= "<table border=0 width=\"100%\"" . ($rtl ? " dir=\"rtl\"": "") . ">\r\n";
             foreach ($this->fields as $field) {
                 if ($field['isSeparator']) {
                     //
@@ -4529,16 +4906,18 @@ class ImForm
                     //
                     // This field is a classic form field
                     // 
-                    $label = ($field['label'] != "" ? $field['label'] . ": " : "");
+                    $label = ($field['label'] != "" ? ($rtl ? " :" . $field['label'] : $field['label'] . ": ") : "");
                     if (is_array($field['value'])) {
-                        $txtData .= $label . implode(", ", $field['value']) . "\r\n";
+                        if ($rtl)
+                            $txtData .= implode(", ", $field['value']) . $label . "\r\n";
+                        else
+                            $txtData .= $label . implode(", ", $field['value']) . "\r\n";
                         $htmData .= "<tr valign=\"top\"><td width=\"25%\" style=\"[email:contentStyle]\"><b>" . $label . "</b></td><td style=\"[email:contentStyle]\">" . implode(", ", $field['value']) . "</td></tr>\r\n";
-                        if ($csv) {
-                            $csvHeader .= $field['label'] . ";";
-                            $csvData .= implode(", ", $field['value']) . ";";
-                        }
                     } else {                        
-                        $txtData .= $label . $field['value'] . "\r\n";
+                        if ($rtl)
+                            $txtData .= $field['value'] . $label . "\r\n";
+                        else
+                            $txtData .= $label . $field['value'] . "\r\n";
                         // Is it an email?
                         if (preg_match('/^([a-z0-9])(([-a-z0-9._])*([a-z0-9]))*\@([a-z0-9])' . '(([a-z0-9-])*([a-z0-9]))+' . '(\.([a-z0-9])([-a-z0-9_-])?([a-z0-9])+)+$/i', $field['value'])) {
                             $htmData .= "<tr valign=\"top\"><td width=\"25%\" style=\"[email:contentStyle]\"><b>" . str_replace(array("\\'", '\\"'), array("'", '"'), $label) . "</b></td><td style=\"[email:contentStyle]\"><a href=\"mailto:" . $field['value'] . "\">". $field['value'] . "</a></td></tr>\r\n";
@@ -4547,10 +4926,6 @@ class ImForm
                             $htmData .= "<tr valign=\"top\"><td width=\"25%\" style=\"[email:contentStyle]\"><b>" . str_replace(array("\\'", '\\"'), array("'", '"'), $label) . "</b></td><td style=\"[email:contentStyle]\"><a href=\"" . $field['value'] . "\">". $field['value'] . "</a></td></tr>\r\n";
                         } else {
                             $htmData .= "<tr valign=\"top\"><td width=\"25%\" style=\"[email:contentStyle]\"><b>" . str_replace(array("\\'", '\\"'), array("'", '"'), $label) . "</b></td><td style=\"[email:contentStyle]\">" . str_replace(array("\\'", '\\"'), array("'", '"'), $field['value']) . "</td></tr>\r\n";
-                        }
-                        if ($csv) {
-                            $csvHeader .= str_replace(array("\\'", '\\"'), array("'", '"'), $field['label']) . ";";
-                            $csvData .= str_replace(array("\\'", '\\"'), array("'", '"'), $field['value']) . ";";
                         }
                     }
                 }
@@ -5075,6 +5450,11 @@ class imPrivateArea
         $imSettings = Configuration::getSettings();
         if (isset($imSettings['access']['users'][$username])) {
             $user = $imSettings['access']['users'][$username];
+            $email = isset($user['email']) ? $user['email'] : $username;
+            $firstname = isset($user['firstname']) ? $user['firstname'] : '';
+            $lastname = isset($user['lastname']) ? $user['lastname'] : '';
+            $password = isset($user['password']) ? $user['password'] : '';
+            $crypt_encoding = isset($user['crypt_encoding']) ? $user['crypt_encoding'] : '';
             return array(
                 'user_type' => '1',
                 'db_stored' => $user['db_stored'],
@@ -5082,16 +5462,16 @@ class imPrivateArea
                 "ts"        => "",
                 "ip"        => "",
                 "username"  => $username,
-                "email"     => $username,
-                "password"  => $user['password'],
-                "firstname" => $user['firstname'],
-                "lastname"  => $user['lastname'],
+                "email"     => $email,
+                "password"  => $password,
+                "firstname" => $firstname,
+                "lastname"  => $lastname,
                 // Compatibility mode for old code snippets
-                "realname"  => isset($user['realname']) ? $user['realname'] : trim($user['firstname'] . " " . $user['lastname']),
+                "realname"  => isset($user['realname']) ? $user['realname'] : trim($firstname . " " . $lastname),
                 "key"       => "",
                 "validated" => true,
                 "groups"    => $user['groups'],
-                "crypt_encoding" => $user['crypt_encoding']
+                "crypt_encoding" => $crypt_encoding
             );
         }
         return null;
@@ -5428,7 +5808,7 @@ class imSearch {
                         $minpos = $filelen;
                         $word = "";
                         foreach ($queries as $query) {
-                            if ($ap < $filelen && ($pos = imstrpos(imstrtoupper($file), imstrtoupper($query), $ap)) !== false) {
+                            if ($ap < $filelen && ($pos = imstrpos(imstrtolower($file), imstrtolower($query), $ap)) !== false) {
                                 if ($pos < $minpos) {
                                     $minpos = $pos;
                                     $word = $query;
@@ -5588,7 +5968,7 @@ class imSearch {
                         $minpos = $filelen;
                         $word = "";
                         foreach ($queries as $query) {
-                            if ($ap < $filelen && ($pos = imstrpos(imstrtoupper($file), imstrtoupper($query), $ap)) !== false) {
+                            if ($ap < $filelen && ($pos = imstrpos(imstrtolower($file), imstrtolower($query), $ap)) !== false) {
                                 if ($pos < $minpos) {
                                     $minpos = $pos;
                                     $word = $query;
@@ -5691,7 +6071,7 @@ class imSearch {
                     $html .= "<div class=\"imProductDescription\">";
                     $html .= "<div class=\"imProductTitle\">";
                     $html .= "<h3>" . $product['title_link'] . "</h3>";
-                    $html .= "<span>" . $product['price'] . "<a class=\"imCssLink\" href=\"#\"  onclick=\"x5engine.cart.ui.addToCart('" . $id . "', 1);\" style=\"margin-left: 5px;\">" . l10n('cart_add') . "</a></span>";
+                    $html .= "<span>" . $product['price'] . "<a class=\"imCssLink\" href=\"#\"  onclick=\"x5engine.cart.ui.addToCart('" . $id . "', 1);\" style=\"margin-inline-start: 5px;\">" . l10n('cart_add') . "</a></span>";
                     $html .= "</div>";
                     $html .= "<p>" . strip_tags($product['description']) . "</p>";
                     $html .= "</div>";
@@ -5904,9 +6284,9 @@ class imSearch {
         $content = "";
         $emptyResultsHtml = "<div style=\"margin-top: 15px; text-align: center; font-weight: bold;\">" . l10n('search_empty') . "</div>\n";
 
-        $html .= "<div class=\"imPageSearchField\"><form method=\"get\" action=\"imsearch.php\">";
-        $html .= "<input value=\"" . htmlspecialchars($keys, ENT_COMPAT, 'UTF-8') . "\" type=\"text\" name=\"search\" />";
-        $html .= "<input style=\"margin-left: 6px;\" type=\"submit\" value=\"" . l10n('search_search') . "\">";
+        $html .= "<div class=\"imPageSearchField\"><form method=\"get\" action=\"imsearch.php\" role=\"search\">";
+        $html .= "<input value=\"" . htmlspecialchars($keys, ENT_COMPAT, 'UTF-8') . "\" type=\"text\" name=\"search\" aria-label=\"" . l10n('search_search') . "\" autofocus/>";
+        $html .= "<input style=\"margin-inline-start: 6px;\" type=\"submit\" value=\"" . l10n('search_search') . "\">";
         $html .= "</form></div>\n";
 
         // Exit if no search query was given
@@ -6021,7 +6401,7 @@ class imSearch {
             $html .= "<div style=\"text-align: center; clear: both;\">";
             // Back
             if ($page > 0) {
-                $html .= "<a href=\"imsearch.php?search=" . implode("+", $queries) . "&amp;page=" . ($page - 1) . "&type=" . $type . "\">&lt;&lt;</a>&nbsp;";
+                $html .= "<a href=\"imsearch.php?search=" . implode("+", $queries) . "&amp;page=" . ($page - 1) . "&type=" . $type . "\" aria-label=\"" . l10n("cmn_pagination_prev", "Previous") . "\">&lt;&lt;</a>&nbsp;";
             }
 
             // Central pages
@@ -6030,14 +6410,15 @@ class imSearch {
 
             for ($i = $start; $i < $end; $i++) {
                 if ($i != $this->page)
-                    $html .= "<a href=\"imsearch.php?search=" . implode("+", $queries) . "&amp;page=" . $i . "&type=" . $type . "\">" . ($i + 1) . "</a>&nbsp;";
+                    $html .= "<a href=\"imsearch.php?search=" . implode("+", $queries) . "&amp;page=" . $i . "&type=" . $type . "\">" .
+                             "<span class=\"screen-reader-only-even-focused\">" . l10n("cmn_pagination_go_to_page", "Go to page:") . "</span>" . ($i + 1) . "</a>&nbsp;";
                 else
-                    $html .= ($i + 1) . "&nbsp;";
+                    $html .= "<span class=\"screen-reader-only-even-focused\">" . l10n("cmn_pagination_current_page", "Current page:") . "</span>" . ($i + 1) . "&nbsp;";
             }
 
             // Next
             if ($results_count > ($page + 1) * $this->results_per_page) {
-                $html .= "<a href=\"imsearch.php?search=" . implode("+", $queries) . "&amp;page=" . ($page + 1) . "&type=" . $type . "\">&gt;&gt;</a>";
+                $html .= "<a href=\"imsearch.php?search=" . implode("+", $queries) . "&amp;page=" . ($page + 1) . "&type=" . $type . "\" aria-label=\"" . l10n("cmn_pagination_next", "Next") . "\">&gt;&gt;</a>";
             }
             $html .= "</div>";
         }
@@ -6099,6 +6480,7 @@ class ImSendEmail
     /**
      * Send an email
      *
+     * @param string $sender      Envelope sender address
      * @param string $from        Self explanatory
      * @param string $to          Self explanatory
      * @param string $subject     Self explanatory
@@ -6108,8 +6490,9 @@ class ImSendEmail
      *
      * @return boolean
      */
-    function send($from = "", $replyTo = "", $to = "", $subject = "", $text = "", $html = "", $attachments = array())
+    function send($sender = "", $from = "", $to = "", $subject = "", $text = "", $html = "", $attachments = array())
     {
+        global $imSettings;
         /*
         |--------------
         |  PHPMailer
@@ -6134,11 +6517,23 @@ class ImSendEmail
             // Meta
             $email->CharSet = 'UTF-8'; // WSXELE-1067: Force UTF-8
             $email->Subject = $subject;
-            $email->From = addressFromEmail($from);
-            $email->FromName = nameFromEmail($from);
-            $replyTo = addressFromEmail($replyTo);
-            if (strlen($replyTo) !== 0 && $email->From !== $replyTo) {
-                $email->addReplyTo($replyTo);
+
+            if ($from != null && $from != "") {
+                if (isset($imSettings['general']['enable_sender_header']) && $imSettings['general']['enable_sender_header']) {
+                    $email->From = addressFromEmail($from);
+                    $email->FromName = nameFromEmail($from);
+                    $email->Sender = $sender;
+                }
+                else {
+                    $email->From = addressFromEmail($sender);
+                    $email->FromName = nameFromEmail($sender);
+                    if (addressFromEmail($sender) !== addressFromEmail($from)) {
+                        $email->addReplyTo($from);
+                    }
+                }
+            }
+            else {
+                $email->From = $sender;
             }
 
             // WSXELE-1120: Split the email addresses if necessary
@@ -6170,7 +6565,7 @@ class ImSendEmail
         |--------------
          */
 
-        $email = new imEMail($from, $replyTo, $to, $subject, "utf-8");
+        $email = new imEMail($sender, $from, $to, $subject, "utf-8", isset($imSettings['general']['enable_sender_header']) && $imSettings['general']['enable_sender_header']);
         $email->setText($text);
         $email->setHTML($this->header . $this->styleHTML($html) . $this->footer);
         $email->setStandardType($this->emailType);
@@ -6327,6 +6722,7 @@ class ImTopic
     public $comments           = null;
     private $id;
     private $target;
+    private $basePathRes;
     private $db                = null;
     private $table             = "";
     private $folder            = "";
@@ -6559,21 +6955,36 @@ class ImTopic
             $replyTo = $comment['email'];
             // ---------------------------------------------------
 
-            if ($type == "guestbook")
-                $html = str_replace(array("Blog", "blog"), array("Guestbook", "guestbook"), l10n('blog_new_comment_text')) . " \"" . $this->title . "\":<br /><br />\n\n";
-            else if ($type == "productpage")
-                $html = l10n('cart_new_comment_text') . " \"" . $this->title . "\":<br /><br />\n\n";
-            else
-                $html = l10n('blog_new_comment_text') . ":<br /><br />\n\n";
-            $html .= "<b>" . l10n('blog_name') . "</b> " . stripslashes($_POST['name']) . "<br />\n";
-            $html .= "<b>" . l10n('blog_email') . "</b> " . $_POST['email'] . "<br />\n";
-            $html .= "<b>" . l10n('blog_website') . "</b> " . $_POST['url'] . "<br />\n";
-            if (isset($_POST['rating']))
-                $html .= "<b>" . l10n('blog_rating', "Vote:") . "</b> " . $_POST['rating'] . "/5<br />\n";
-            $html .= "<b>" . l10n('blog_message') . "</b> " . stripslashes($_POST['body']) . "<br /><br />\n\n";
+            if ($imSettings['general']['rtl']) {
+                if ($type == "guestbook")
+                    $html = ":\"" . $this->title . "\" " . str_replace(array("Blog", "blog"), array("Guestbook", "guestbook"), l10n('blog_new_comment_text')) . "<br /><br />\n\n";
+                else if ($type == "productpage")
+                    $html = ":\"" . $this->title . "\" " . l10n('cart_new_comment_text') . "<br /><br />\n\n";
+                else
+                    $html = ":" . l10n('blog_new_comment_text') . "<br /><br />\n\n";
+                $html .= stripslashes($_POST['name']) . " <b>" . l10n('blog_name') . "</b><br />\n";
+                $html .= $_POST['email'] . " <b>" . l10n('blog_email') . "</b><br />\n";
+                $html .= $_POST['url'] . " <b>" . l10n('blog_website') . "</b><br />\n";
+                if (isset($_POST['rating']))
+                    $html .= "5/" . $_POST['rating'] . " <b>" . l10n('blog_rating', "Vote:") . "</b><br />\n";
+                $html .= stripslashes($_POST['body']) . " <b>" . l10n('blog_message') . "</b><br /><br />\n\n";
+            } else {
+                if ($type == "guestbook")
+                    $html = str_replace(array("Blog", "blog"), array("Guestbook", "guestbook"), l10n('blog_new_comment_text')) . " \"" . $this->title . "\":<br /><br />\n\n";
+                else if ($type == "productpage")
+                    $html = l10n('cart_new_comment_text') . " \"" . $this->title . "\":<br /><br />\n\n";
+                else
+                    $html = l10n('blog_new_comment_text') . ":<br /><br />\n\n";
+                $html .= "<b>" . l10n('blog_name') . "</b> " . stripslashes($_POST['name']) . "<br />\n";
+                $html .= "<b>" . l10n('blog_email') . "</b> " . $_POST['email'] . "<br />\n";
+                $html .= "<b>" . l10n('blog_website') . "</b> " . $_POST['url'] . "<br />\n";
+                if (isset($_POST['rating']))
+                    $html .= "<b>" . l10n('blog_rating', "Vote:") . "</b> " . $_POST['rating'] . "/5<br />\n";
+                $html .= "<b>" . l10n('blog_message') . "</b> " . stripslashes($_POST['body']) . "<br /><br />\n\n";
+            }
             // Set the proper link
             if ($moderateurl != "") {
-                $html .= ($moderate ? l10n('blog_unapprove_link') : l10n('blog_approve_link')) . ":<br />\n";
+                $html .= ($moderate ? l10n('blog_approve_link') : l10n('blog_unapprove_link')) . ":<br />\n";
                 $html .= "<a href=\"" . $moderateurl . "\">" . $moderateurl . "</a>";
             }
             if ($type == "guestbook")
@@ -6586,7 +6997,12 @@ class ImTopic
         }
 
         // Redirect
-        echo "<script>window.top.location.href='" . $this->posturl . ($moderate ? $this->id . "success" : "") . "';</script>";
+        $posturl = $this->posturl;
+        if ($moderate) {
+            $posturl = rtrim($posturl, "?&");
+            $posturl .= (strpos($posturl, "?") === false ? "?" : "&") . $this->id . "success";
+        }
+        echo "<script>window.top.location.href='" . $posturl . "';</script>";
         return true;
     }
 
@@ -6659,6 +7075,23 @@ class ImTopic
     }
 
     /**
+     * Generate the HTML for the star rating control
+     * 
+     * @param {int} $selectedVote   currently selected vote
+     * 
+     * @return void
+     */
+    function getStarRatingHTML($selectedVote = 0)
+    {
+        for ($i = 1; $i <= 5; $i++) {
+            echo "<input value=\"" . $i . "\" id=\"star" . $i . "\" " . ($i == $selectedVote ? "checked " : "") . "type=\"radio\" name=\"rating\" class=\"screen-reader-only-even-focused\" aria-required=\"true\"/>";
+            echo "<label for=\"star" . $i . "\" class=\"topic-star-label\"><span class=\"screen-reader-only-even-focused\">" . $i . "</span>";
+            echo "<span class=\"topic-star-big\"></span>";
+            echo "</label>";
+        }
+    }
+
+    /**
      * Show the comments form
      *
      * @param {boolean} $rating      true to show the rating
@@ -6670,6 +7103,7 @@ class ImTopic
     {
         global $imSettings;
         $id = $this->id . "-topic-form";
+        $requiredMark = "<span aria-hidden=\"true\">*</span>";
 
         $this->checkNewAbuses();
 
@@ -6690,8 +7124,8 @@ class ImTopic
                 <input type=\"hidden\" name=\"post_id\" value=\"" . $this->id . "\"/>
                 <div class=\"topic-form-row\">
                     <div class=\"topic-form-item\">
-                        <label for=\"" . $id . "-name\">" . l10n('blog_name') . "*</label> 
-                        <input type=\"text\" id=\"" . $id . "-name\" name=\"name\" class=\"imfield mandatory striptags trim\" />
+                        <label for=\"" . $id . "-name\">" . l10n('blog_name') . $requiredMark . "</label> 
+                        <input type=\"text\" id=\"" . $id . "-name\" name=\"name\" class=\"imfield mandatory striptags trim\" aria-required=\"true\"/>
                     </div>
                     <div class=\"topic-form-item second-column\">
                         <label for=\"" . $id . "-url\">" . l10n('blog_website') . "</label>
@@ -6700,8 +7134,8 @@ class ImTopic
                 </div>
                 <div class=\"topic-form-row\">
                     <div class=\"topic-form-item\">
-                        <label for=\"" . $id . "-email\">" . l10n('blog_email') . "*</label>
-                        <input type=\"text\" id=\"" . $id . "-email\" name=\"email\" class=\"imfield mandatory valEmail\"/>
+                        <label for=\"" . $id . "-email\">" . l10n('blog_email') . $requiredMark . "</label>
+                        <input type=\"text\" id=\"" . $id . "-email\" name=\"email\" class=\"imfield mandatory valEmail\" aria-required=\"true\"/>
                     </div>
                     <div class=\"topic-form-item second-column empty-column\">
                     </div>
@@ -6712,18 +7146,18 @@ class ImTopic
             //and to make the "mandatory" tip appear to the right of the stars: the span kills 0% if a score is not selected.
             echo "<div class=\"topic-form-row\">
                     <div class=\"topic-form-item rating\">
-                        <label for=\"" . $id . "-star-full\">" . l10n('blog_rating') . "*</label>
-                        <span class=\"topic-star-container-big variable-star-rating\">
-                            <span class=\"topic-star-fixer-big\" style=\"width: 0;\"></span>
-                            <input type=\"text\" id=\"" . $id . "-star-full\" name=\"star-full\" class=\"imfield mandatory\" style=\"width: 160px; visibility: hidden;\"/>
+                        <label for=\"" . $id . "-star-full\">" . l10n('blog_rating') . $requiredMark . "</label>
+                        <span class=\"topic-star-container-big variable-star-rating\" aria-label=\"" . l10n('comments_and_ratings_selected_rate') . " 0\">";
+                            $this->getStarRatingHTML();
+            echo "          <input type=\"text\" id=\"" . $id . "-star-full\" name=\"star-full\" class=\"imfield mandatory\" style=\"width: 160px; visibility: hidden; display: none;\"/>
                         </span>
                     </div>
                 </div>";
         }
         echo "<div class=\"topic-form-row\">
                 <div class=\"topic-form-item\">
-                    <label for=\"" . $id . "-body\">" . l10n('blog_message') . "*</label>
-                    <textarea maxlength=\"1500\" id=\"" . $id . "-body\" name=\"body\" class=\"imfield mandatory striptags trim\" style=\"width: 100%; height: 100px;\"></textarea>
+                    <label for=\"" . $id . "-body\">" . l10n('blog_message') . $requiredMark . "</label>
+                    <textarea maxlength=\"1500\" id=\"" . $id . "-body\" name=\"body\" class=\"imfield mandatory striptags trim\" style=\"width: 100%; height: 100px;\" aria-required=\"true\"></textarea>
                 </div>
         </div>";
         if ($captcha) {
@@ -6750,7 +7184,7 @@ class ImTopic
      */
     function showSummary($ratingAndStars = true, $admin = false, $hideifempty = true)
     {
-        $data = $this->getRatingsDataSummary();
+        $data = $this->getRatingsDataSummary($admin);
 
         $classContainer = "topic-summary" . ($data["totalComments"] > 0 ? "" : " no-review");
         $classContainer .= $ratingAndStars ? " comments-and-star" : " comments";
@@ -6788,7 +7222,7 @@ class ImTopic
         echo "</div>\n"; //end topic-summary
     }
 
-    function getRatingsDataSummary() {	
+    function getRatingsDataSummary($admin = false) {
         $c = $this->comments->getAll();
         $vote = 0;
         $votes = 0;
@@ -6898,9 +7332,9 @@ class ImTopic
         $topicBars =  "<div class=\"topic-bars\">";
         for ($i = 5; $i > 0; $i--) {
             $topicBars .= "<div class=\"topic-bar\">";
-            $topicBars .= "<div class=\"bar-star-n\">" . $i . "&nbsp; <span class=\"topic-star-fixer-small star\"></span></div>\n";  
+            $topicBars .= "<div class=\"bar-star-n\"><span class=\"screen-reader-only-even-focused\">" . l10n("comments_and_ratings_rate", "Rate:") . "</span>" . $i . "&nbsp; <span class=\"topic-star-fixer-small star\"></span></div>\n";  
             $topicBars .= "<div class=\"bar-progress\"><span style=\"width:". ($votescount > 0 ? ( ($ratingByValue[$i] * 100) / $votescount ) : 0) ."%;\"></span></div>\n";        
-            $topicBars .= "<div class=\"bar-total\">". $ratingByValue[$i] ."</div>\n";
+            $topicBars .= "<div class=\"bar-total\"><span class=\"screen-reader-only-even-focused\">" . l10n("comments_and_ratings_number_of_rates", "Number of rates:") . "</span>". $ratingByValue[$i] ."</div>\n";
             $topicBars .= "</div>\n"; //end topic-bar
         }
         $topicBars .= "<div class=\"fill\"></div>";
@@ -6962,13 +7396,9 @@ class ImTopic
             $i = 0;
             foreach ( $c as $comment ) {
                 if ( isset($comment['body']) && $comment['approved'] == "1" ) {
-                    //format date to  d-m-Y (es. '12 June 2020')
+                    //format date to extended format set by user
                     $createDate = new DateTime($comment['timestamp']);
-                    $formatDate = $createDate->format('d-m-Y');
-                    $text = l10n('date_months');
-                    $formatDate = explode('-', $formatDate);
-                    $formatDate[1] = $text[$formatDate[1] - 1];
-                    $formatDate = implode(' ', $formatDate);
+                    $formatDate = formatDate($createDate, true);
 
                     //check to make sure that the text does not exceed the maximum font size. If it passes I cut the text
                     $body = $comment['body'];
@@ -7018,7 +7448,7 @@ class ImTopic
                     echo "</div>";
                     echo "<div class=\"topic-comment-date imBreadcrumb\" datetime=\"" . $comment['timestamp'] . "\">" . $formatDate . "</div>\n";
                     if ( $rating && isset($comment['rating']) && $comment['rating'] > 0 ) {
-                        echo "<div><span class=\"topic-star-container-small\" title=\"" . $comment['rating'] . "/5\">
+                        echo "<div><span class=\"topic-star-container-small\" aria-label=\"" . $comment['rating'] . "/5\" role=\"img\">
                                     <span class=\"topic-star-fixer-small\" style=\"width: " . round($comment['rating']/5 * 100) . "%;\"></span>
                             </span></div>\n";
                     }
@@ -7085,7 +7515,7 @@ class ImTopic
                 $cl = "page";
                 $cl .= $i == $page ? " current" : "";
                 $link = updateQueryStringVar($this->id . "page", $i) . $anchor;
-                echo "\t<a href=\"?" . $link . "\" class=\"" . $cl . "\">" . ($i + 1) . "</a>\n";
+                echo "\t<a href=\"?" . $link . "\" class=\"" . $cl . "\"><span class=\"screen-reader-only-even-focused\">" . ($i == $page ? l10n("cmn_pagination_current_page", "Current page:") : l10n("cmn_pagination_go_to_page", "Go to page:")) . "</span>" . ($i + 1) . "</a>\n";
             }
             else if ($i < $currentPage - 1 && !$leading_dots) {
                 echo "<span class=\"dots-page\">...</span>";
@@ -7192,7 +7622,7 @@ class ImTopic
                     echo "\t\t<div class=\"topic-comment-date\">" . $comment['timestamp'] . "</div>\n";
                     // Rating
                     if ($rating && isset($comment['rating']) && $comment['rating'] > 0) {
-                        echo "\t\t<div class=\"topic-star-container-small\" title=\"" . $comment['rating'] . "/5\">
+                        echo "\t\t<div class=\"topic-star-container-small\" aria-label=\"" . $comment['rating'] . "/5\" role=\"img\">
                                     <span class=\"topic-star-fixer-small\" style=\"width: " . round($comment['rating']/5 * 100) . "%;\"></span>
                             </div>\n";
                     }
@@ -7200,7 +7630,7 @@ class ImTopic
                     echo "\t\t<div class=\"topic-comment-body\">" . $comment['body'] . "</div>\n";
                     echo "\t</div>\n";
                     echo "\t<div class=\"topic-comment-controls\">\n";
-                    echo "\t\t<span class=\"left\">IP: " . $comment['ip'] . "</span>\n";
+                    echo "\t\t<span class=\"left float-left margin-right-small\">IP:</span><span class=\"float-left\">" . $comment['ip'] . "</span>\n";
                     if ($comment['abuse'] == "1")
                         echo "\t\t<a class=\"green\" href=\"" . $this->posturl . "unabuse=" . $comment['id'] . "\">" . l10n("blog_abuse_remove", "Remove abuse") . "</a> |\n";
                     if ($comment['approved'] == "1")
@@ -7256,8 +7686,8 @@ class ImTopic
             echo "<div style=\"text-align: center;\">";
                 echo "<div class=\"box-star\">";
                     echo "<div class=\"enter_rating\">" . ( $cookieVotedIsNull ? l10n("comments_and_ratings_enter_rating") : l10n("comments_and_ratings_thanks") ) . "</div>";
-                    echo "<div class=\"topic-star-container-big" . ( $cookieVotedIsNull ? " variable-star-rating" : "" ) . "\" data-url=\"" . $this->posturl . "\" data-id=\"" . $this->id . "\">";
-                        echo "<span class=\"topic-star-fixer-big\" style=\"width: " . round($cookieVotedValue/5 * 100) . "%;\"></span>";
+                    echo "<div class=\"topic-star-container-big" . ( $cookieVotedIsNull ? " variable-star-rating" : "" ) . "\" data-url=\"" . $this->posturl . "\" data-id=\"" . $this->id . "\" aria-label=\"" . l10n('comments_and_ratings_selected_rate') . " " . $cookieVotedValue . "\">";
+                        $this->getStarRatingHTML($cookieVotedIsNull ? 0 : $cookieVotedValue);
                     echo "</div>";
                 echo "</div>";
                 echo "<div class=\"fill\"></div>";
@@ -7770,7 +8200,7 @@ if (!function_exists('json_encode')) {
 function checkJsAndSpam($expectedValue = "")
 {
     // Spam!
-    if ($_POST['prt'] != "") {
+    if (isset($_POST['prt']) && $_POST['prt'] != "") {
         return false;
     }
 
@@ -7873,9 +8303,57 @@ function nameFromEmail($email) {
     if ($end > 0) {
         return trim(substr($email, 0, $end));
     }
-    return $email;
+    return "";
 }
 
+
+/**
+ * Format a DateTime using normal or extended format, as configured by user in step 2 (default styles)
+ *
+ * @param  DateTime $date      The date to format
+ * @param  boolean  $extended  true to use extended format, false otherwise
+ * @param  boolean  $showDay   true to show day number and/or name, false to show only month and year
+ * @param  boolean  $showTime  true to show time in hh:mm:ss format
+ *
+ * @return String              The formatted date
+ */
+function formatDate($date, $extended = false, $showDay = true, $showTime = false) {
+    global $imSettings;
+
+    $varName = 'date_format';
+    if (!$showDay) $varName .= '_no_day';
+    if ($extended) $varName .= '_ext';
+    $format = $imSettings['general'][$varName];
+    
+    $date_full_months = l10n('date_full_months');
+    $date_months = l10n('date_months');
+    $date_full_days = l10n('date_full_days');
+    $date_days = l10n('date_days');
+
+    $month = $date->format('n');
+    $dayOfWeek = $date->format('w') - 1;  // 'w' is Sunday to Saturday, while date_full_days and date_days are Monday to Sunday
+	if ($dayOfWeek == -1) $dayOfWeek = 6;
+
+    $format = str_replace('yyyy', $date->format('Y'),            $format);
+    $format = str_replace('yy',   $date->format('y'),            $format);
+    $format = str_replace('MMMM', '$$$$',                        $format);
+    $format = str_replace('MMM',  '$$$',                         $format);
+    $format = str_replace('MM',   $date->format('m'),            $format);
+    $format = str_replace('M',    $month,                        $format);
+    $format = str_replace('dddd', '§§§§',                        $format);
+    $format = str_replace('ddd',  '§§§',                         $format);
+    $format = str_replace('dd',   $date->format('d'),            $format);
+    $format = str_replace('d',    $date->format('j'),            $format);
+    $format = str_replace('$$$$', $date_full_months[$month - 1], $format);
+    $format = str_replace('$$$',  $date_months[$month - 1],      $format);
+    $format = str_replace('§§§§', $date_full_days[$dayOfWeek],   $format);
+    $format = str_replace('§§§',  $date_days[$dayOfWeek],        $format);
+
+    if ($showTime)
+        $format .= ' ' . $date->format('H:i:s');
+
+    return $format;
+}
 
 $imSettings = Array();
 $l10n = Array();

@@ -42,6 +42,10 @@
 	background-color: #343434;
 }
 
+.bar.background-mute-dark {
+	background-color: #AAAAAA;
+}
+
 .background-color-1 {
 	background-color: #AAAAAA !important; /* !important needed to override the default WSX5 CSS code */
 }

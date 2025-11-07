@@ -72,7 +72,7 @@
             <div class="margin-bottom"><?php echo $comment['timestamp'] ?></div>
             <div class="margin-bottom"><?php echo $user ?></div>
             <?php echo $rating; ?>
-            <div>IP: <?php echo $comment['ip'] ?></div>
+            <div><span class="float-left margin-right-small">IP:</span><span class="float-left"><?php echo $comment['ip'] ?></span></div>
         </td>
         <td class="text-small border-bottom border-mute-light"><?php echo $comment['body'] ?></td>
         <td class="border-bottom border-right border-mute-light text-right padding-left-10-child padding-bottom-10-child"><?php echo $links ?></td>
@@ -91,7 +91,7 @@
             <?php endif; ?>
             <div class="margin-bottom clearfix"><?php echo $comment['body'] ?></div>
             <div class="flex">
-                <div class="flex-grow-1">IP: <?php echo $comment['ip'] ?></div>
+                <div class="flex-grow-1"><span class="float-left margin-right-small">IP:</span><span class="float-left"><?php echo $comment['ip'] ?></span></div>
                 <div class="flex-grow-1 text-right padding-left-10-child"><?php echo $links ?></div>
             </div>
         </td>

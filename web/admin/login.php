@@ -8,7 +8,7 @@ $login_error = "";
 if (isset($_GET['logout'])) {
 	$login = Configuration::getPrivateArea();
 	$login->logout();
-	@header("Location: ../");
+	@header("Location: login.php");
 	exit(0);
 }
 
@@ -27,22 +27,6 @@ if (isset($_POST['uname']) && $_POST['uname'] != "" && isset($_POST['pwd']) && $
 		$login_error = $l10n['private_area_login_error'];
 	}
 }
-
-
-if (isset($_POST['hash_request']) || isset($_POST['token_request'])) {
-	header("HTTP/1.1 403 Forbidden");
-	header("Content-type: application/json");
-	echo "{ \"result\": \"error\", \"message\": \"not_supported\" }";
-	exit(0);
-}
-
-if (isset($_GET['token'])) {
-	header("HTTP/1.1 403 Forbidden");
-	echo '<script>parent.postMessage(\'{"code": 403}\', "*");</script>';
-	echo "Login via mobile app is not supported.";
-	exit(0);
-}
-
 
 // Redirect to a specific section
 $redirect = Configuration::getControlPanel()->getRedirectFromArray($_GET);

@@ -4,11 +4,17 @@
     $shippingAddress = !empty($orderData['shipping']) 
                      ? $orderData['shipping']
                      : ((!empty($orderData['invoice'])) ? $orderData['invoice'] : false);
+    $rtl = Configuration::getSettings()['general']['rtl'];
 ?>
 <table border="0" width="100%" style="[email:contentStyle]">
     <tr>
         <td style="[email:contentFontFamily] text-align: center; font-weight: bold;font-size: 1.11em">
-            <?php echo $l10n->get('cart_order_no') . ": " . $orderData['order']['id'] ?>
+            <?php 
+                if ($rtl)
+                    echo $orderData['order']['id'] . " :" . $l10n->get('cart_order_no');
+                else
+                    echo $l10n->get('cart_order_no') . ": " . $orderData['order']['id'];
+            ?>
         </td>
     </tr>
     <!-- Opening Message -->
@@ -18,7 +24,7 @@
     <tr>
         <td style="[email:contentFontFamily] padding: 5px 0 0 0;">
             <h3 style="font-size: 1.11em"><?php echo $l10n->get('cart_product_list') ?></h3>
-            <table cellpadding="5" width="100%" style="[email:contentStyle] border-collapse: collapse;">
+            <table cellpadding="5" width="100%" style="[email:contentStyle] border-collapse: collapse;" <?php if ($rtl) echo " dir=\"rtl\"" ?>>
                 <tr bgcolor="[email:bodyBackgroundOdd]">
                     <td style="[email:contentFontFamily] border: 1px solid [email:bodyBackgroundBorder]; color: [email:bodyTextColorOdd]">
                         <b><?php echo $l10n->get("cart_name") ?></b>
@@ -33,7 +39,7 @@
                         <td style="[email:contentFontFamily] border: 1px solid [email:bodyBackgroundBorder];"><?php echo $value["name"] ?><br /><?php echo $value["description"] ?></td>
                         <td style="[email:contentFontFamily] border: 1px solid [email:bodyBackgroundBorder]; text-align: right;"><?php echo $value["quantity"] ?></td>
                         <?php if (isset($value['image'])): ?>
-                            <td style="[email:contentFontFamily] border: 1px solid [email:bodyBackgroundBorder];"><br /><img src="<?php echo $baseurl . $value['image'] ?>" alt="<?php echo $value['name'] ?>" style="max-width: 250px;" /></td>
+                            <td style="[email:contentFontFamily] border: 1px solid [email:bodyBackgroundBorder];"><br /><img src="<?php echo $baseurl . $value['image'] ?>" alt="" style="max-width: 250px;" /></td>
                         <?php endif; ?>
                     </tr>
                     <?php $i++; ?>
@@ -48,7 +54,7 @@
         <!-- Data header -->
         <td colspan="2" style="[email:contentFontFamily]">
             <h3 style="font-size: 1.11em"><?php echo $l10n->get('cart_shipping_address') ?></h3>
-            <table width="100%" style="[email:contentStyle]">
+            <table width="100%" style="[email:contentStyle]" <?php if ($rtl) echo " dir=\"rtl\"" ?>>
             <?php $i = 0; foreach ($shippingAddress as $key => $value): ?>
                 <?php if (trim($value['value']) != ""): ?>
                 <tr <?php echo ($i%2 ? " bgcolor=\"[email:bodyBackgroundOdd]\"" : "") ?>>
@@ -92,7 +98,7 @@
         </td>
     </tr>
     <!-- Tracking Info -->
-        <?php if ($shippingData['enable_tracking'] === true && $orderData['order']['tracking_code'] !== null) : ?>
+        <?php if (isset($shippingData['tracking_type']) && isset($orderData['order']['tracking_code']) && $shippingData['tracking_type'] === 'url' && $orderData['order']['tracking_code'] !== null) : ?>
     <?php echo $separator ?>
     <tr>
         <td colspan="2" style="[email:contentFontFamily] padding: 5px 0 0 0;">

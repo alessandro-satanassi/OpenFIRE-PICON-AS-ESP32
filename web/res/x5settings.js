@@ -5,7 +5,10 @@
 		b = x.boot;
 
 	s.siteId = '786A33E6FE36146F1E7BD44C8057F20C';
-	s.version = '2022-3-7-0';
+	s.dateFormat = 'dd MMM yyyy';
+	s.dateFormatExt = 'dddd dd MMM yyyy';
+	s.rtl = false;
+	s.version = '2025-2-11-0';
 	b.push(function () {
 		x.setupDateTime();
 		x.imAccess.showLogout();
@@ -18,7 +21,7 @@
 	$.extend(s.links, {
 		'htmlPlaceholder' : '<!--html_content_placeholder-->',
 		'cssPlaceholder' : '<!--css_class_placeholder-->',
-		'baseUrlPlaceholder' : '<!--base_url_placeholder-->'
+		'baseUrlPlaceholder' : '--base_url_placeholder--'
 	});
 
 
@@ -30,7 +33,7 @@
 		'zoomEnabled' : true,
 		'showProgress' : true,
 		'shadow' : '',
-		'background' : 'rgba(55, 71, 79, 1)',
+		'background' : 'rgba(55, 71, 79, 0.9)',
 		'backgroundBlur' : false,
 		'borderWidth' : {
 			'top': 0,
@@ -55,7 +58,6 @@
 		'fontSize' : '9pt',
 		'textAlignment' : 'left',
 		'boxColor' : 'rgba(255, 255, 255, 1)',
-		'opacity' : 0.9,
 		'radialBg' : false // Works only in Mozilla Firefox and Google Chrome
 	});
 
@@ -64,22 +66,25 @@
 		'effect' : 'websitex5.bl.project.templates.properties.showboxanimation',
 		'width' : 500,
 		'shadow' : '',
-		'background' : 'rgba(55, 71, 79, 1)',
+		'background' : 'rgba(55, 71, 79, 0.9)',
 		'backgroundBlur' : false,
 		'borderRadius' : 10,
 		'textColor' : 'rgba(0, 0, 0, 1)',
-		'boxColor' : 'rgba(255, 255, 255, 1)',
-		'opacity' : 0.9
+		'boxColor' : 'rgba(255, 255, 255, 1)'
 	});
 
 	// Tip
 	$.extend(s.imTip, {
 		'borderRadius' : 1,
-		'arrow' : true,
-		'shape' : 'classic',
-		'position' : 'top',
-		'effect' : 'none',
-		'showTail' : true
+		'arrowFilePath' : 'files/10.svg',
+		'arrowHeight' : 16,
+		'arrowWidth' : 20,
+		'showArrow' : true,
+		'showArrowOnVertex' : false,
+		'vertexX' : 10,
+		'vertexY' : 8,
+		'position' : 'topcenter',
+		'effect' : 'none'
 	});
 
 	// PageToTop

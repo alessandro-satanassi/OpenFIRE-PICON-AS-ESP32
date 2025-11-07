@@ -185,23 +185,4 @@ class ControlPanel {
 
         return $template;
     }
-
-    /**
-     * Report the login with the WSX5 Manager
-     * 
-     * @return Void
-     */
-    public function loginWsx5Manager()
-    {
-        $_SESSION['is_wsx5_manager'] = true;
-    }
-
-    /**
-     * Return true if this site is being loaded in the WSX5 Manager app
-     * 
-     * @return boolean
-     */
-    public function isWsx5Manager() {
-        return isset($_SESSION['is_wsx5_manager']) && $_SESSION['is_wsx5_manager'];
-    }
 }

@@ -2,11 +2,12 @@
   	//Incomedia WebSite X5 EMail Class. All rights reserved.
   
 	class imEMail {
+		var $sender;
 		var $from;
-		var $replyTo;
 		var $to;
 		var $subject;
 		var $charset;
+		var $enable_sender;
 		var $text;
 		var $html;
 		var $type;
@@ -14,13 +15,14 @@
 		
 		var $attachments;
 		
-		function __construct($from,$replyTo,$to,$subject,$charset) {
-			$this->from = $from;
-			if (strlen($replyTo) !== 0 && $from !== $replyTo) {
-				$this->replyTo = $replyTo;
+		function __construct($sender, $from, $to, $subject, $charset, $enable_sender) {
+			$this->sender = $sender;
+			if (strlen($from) !== 0 && $sender !== $from) {
+				$this->from = $from;
 			}
 			$this->to = $to;
 			$this->charset = $charset;
+			$this->enable_sender = $enable_sender;
 			$this->subject = strlen($subject) ? "=?" . strtoupper($this->charset) . "?B?". base64_encode($subject) . "?=" : "";
 		}
 
@@ -33,12 +35,12 @@
 			$this->newline = (strtolower($type) == "html-x" ? "\n" : "\r\n");
 		}
 		
-		function setFrom($from) {
-			$this->from = $from;
+		function setSender($sender) {
+			$this->sender = $sender;
 		}
 
-		function setReplyTo($replyTo) {
-			$this->replyTo = $replyTo;
+		function setFrom($from) {
+			$this->from = $from;
 		}
 		
 		function setTo($to) {
@@ -77,7 +79,7 @@
 			$headers = "";
 			$msg = "";
 
-			if($this->from == "" || $this->to == "" || ($this->text == "" && $this->html == ""))
+			if($this->sender == "" || $this->to == "" || ($this->text == "" && $this->html == ""))
 				return false;
 			
 			if ($this->type != "text") {
@@ -91,9 +93,12 @@
 				$boundary_file = md5(time() . "_attachment");
 				$boundary_alt = md5(time() . "_alternative");			
 
-				$headers .= "From: " . $this->from . $this->newline;
-				if (strlen($this->replyTo) !== 0) {
-					$headers .= "Reply-To: " . $this->replyTo . $this->newline;
+				if ($this->from != null && $this->from != "" && $this->enable_sender)
+					$headers .= "From: " . $this->from . $this->newline;
+				else
+					$headers .= "From: " . $this->sender . $this->newline;
+				if ($this->from != null && $this->from != "" && !$this->enable_sender) {
+					$headers .= "Reply-To: " . $this->from . $this->newline;
 				}
 				$headers .= "Message-ID: <" . time() . rand(0,9) . rand(0,9) . "@websitex5.users>" . $this->newline;
 				$headers .= "X-Mailer: WebSiteX5 Mailer" . $this->newline;
@@ -157,10 +162,10 @@
 				}
 				
 				if (function_exists('ini_set'))
-					@ini_set("sendmail_from", $this->from);
+					@ini_set("sendmail_from", $this->sender);
 				
 				// First attempt: -f flag, no more headers
-				if(@mail($this->to, $this->subject, $msg, $headers, "-f" . $this->from))
+				if(@mail($this->to, $this->subject, $msg, $headers, "-f" . $this->sender))
 					return true;
 				// Second attempt: no -f flag, no more headers
 				if (@mail($this->to, $this->subject, $msg, $headers))
@@ -176,7 +181,13 @@
 				|-------------------------------
 				 */
 
-				$headers .= "From: " . $this->from . $this->newline;
+				if ($this->from != null && $this->from != "" && $this->enable_sender)
+					$headers .= "From: " . $this->from . $this->newline;
+				else
+					$headers .= "From: " . $this->sender . $this->newline;
+				if ($this->from != null && $this->from != "" && !$this->enable_sender) {
+					$headers .= "Reply-To: " . $this->from . $this->newline;
+				}
 				$headers .= "Content-Type: text/plain;charset=" . $this->charset . $this->newline;
 				$msg .= $this->text . $this->newline . $this->newline;
 

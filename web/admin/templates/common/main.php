@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="fore-mute-dark background-mute-light">
+<html lang="en" dir="<?php echo $imSettings['general']['rtl'] ? "rtl" : "ltr" ?>" class="fore-mute-dark background-mute-light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width">
     <title><?php echo $pagetitle ?> - <?php echo $sitetitle ?></title>
+    <link rel="manifest" href="manifest.json"/>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600&subset=cyrillic,greek" rel="stylesheet">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
     <link rel="stylesheet" href="../style/reset.css?v=<?php echo md5($imSettings['general']['version']) ?>"/>
