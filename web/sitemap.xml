@@ -3,42 +3,49 @@
 	<url>
 		<loc>https://alessandro-satanassi.github.io/OpenFIRE-PICON-ESP32/
 /index.html</loc>
-		<lastmod>2025-11-06</lastmod>
+		<lastmod>2025-11-08</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
 		<loc>https://alessandro-satanassi.github.io/OpenFIRE-PICON-ESP32/
 /resources---community.html</loc>
-		<lastmod>2025-11-06</lastmod>
+		<lastmod>2025-11-08</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
 		<loc>https://alessandro-satanassi.github.io/OpenFIRE-PICON-ESP32/
 /about-us-1.html</loc>
-		<lastmod>2025-11-06</lastmod>
+		<lastmod>2025-11-08</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
 		<loc>https://alessandro-satanassi.github.io/OpenFIRE-PICON-ESP32/
-/build---frame---assembly.html</loc>
-		<lastmod>2025-11-07</lastmod>
+/frame-files-.stl.html</loc>
+		<lastmod>2025-11-08</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
 		<loc>https://alessandro-satanassi.github.io/OpenFIRE-PICON-ESP32/
-/hardware---wiring.html</loc>
-		<lastmod>2025-11-06</lastmod>
+/hardware---wiring--vecchio-.html</loc>
+		<lastmod>2025-11-08</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
 		<loc>https://alessandro-satanassi.github.io/OpenFIRE-PICON-ESP32/
 /software---firmware.html</loc>
-		<lastmod>2025-11-06</lastmod>
+		<lastmod>2025-11-08</lastmod>
+		<changefreq>monthly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://alessandro-satanassi.github.io/OpenFIRE-PICON-ESP32/
+/hardware---wiring.html</loc>
+		<lastmod>2025-11-08</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.5</priority>
 	</url>

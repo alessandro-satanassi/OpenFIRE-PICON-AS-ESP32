@@ -9,9 +9,10 @@ $imSettings['search']['general'] = array(
 		'0' => 'index.html',
 		'6' => 'resources---community.html',
 		'7' => 'about-us-1.html',
-		'8' => 'build---frame---assembly.html',
-		'9' => 'hardware---wiring.html',
-		'10' => 'software---firmware.html'
+		'8' => 'frame-files-.stl.html',
+		'9' => 'hardware---wiring--vecchio-.html',
+		'10' => 'software---firmware.html',
+		'11' => 'hardware---wiring.html'
 	),
 	'extendedScope' => array(
 	)
