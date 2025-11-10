@@ -10,7 +10,6 @@ $imSettings['search']['general'] = array(
 		'6' => 'resources---community.html',
 		'7' => 'about-us-1.html',
 		'8' => 'frame-files-.stl.html',
-		'9' => 'hardware---wiring--vecchio-.html',
 		'10' => 'software---firmware.html',
 		'11' => 'hardware---wiring.html'
 	),

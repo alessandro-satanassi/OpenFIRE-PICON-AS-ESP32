@@ -15,7 +15,7 @@
 		<link rel="stylesheet" href="style/template.css?2025-2-11-0" media="screen" />
 		
 		<link rel="stylesheet" href="pluginAppObj/imFooter_pluginAppObj_03/custom.css" media="screen, print" />
-		<link rel="stylesheet" href="pcss/imsearch.css?2025-2-11-0-638982128033917156" media="screen,print" />
+		<link rel="stylesheet" href="pcss/imsearch.css?2025-2-11-0-638983824982414335" media="screen,print" />
 		<script src="res/jquery.js?2025-2-11-0"></script>
 		<script src="res/x5engine.js?2025-2-11-0" data-files-version="2025-2-11-0"></script>
 		
@@ -25,7 +25,7 @@
 			x5engine.utils.currentPagePath = 'imsearch.php';
 			x5engine.boot.push(function () { x5engine.imPageToTop.initializeButton({}); });
 		</script>
-		<link rel="icon" href="favicon.png?2025-2-11-0-638982128033851145" type="image/png" />
+		<link rel="icon" href="favicon.png?2025-2-11-0-638983824982394126" type="image/png" />
 	</head>
 	<body>
 		<div id="imPageExtContainer">
@@ -60,13 +60,6 @@ FRAME FILES .STL		</a>
 <div class="label-inner-wrapper">
 		<a class="label" href="hardware---wiring.html">
 HARDWARE &amp; WIRING		</a>
-</div>
-</div>
-	</li><li class="imMnMnMiddle imPage" data-link-paths=",/OpenFIRE-PICON-ESP32/%0A/hardware---wiring--vecchio-.html">
-<div class="label-wrapper">
-<div class="label-inner-wrapper">
-		<a class="label" href="hardware---wiring--vecchio-.html">
-HARDWARE &amp; WIRING (vecchio)		</a>
 </div>
 </div>
 	</li><li class="imMnMnMiddle imPage" data-link-paths=",/OpenFIRE-PICON-ESP32/%0A/software---firmware.html">
@@ -143,13 +136,6 @@ FRAME FILES .STL		</a>
 <div class="label-inner-wrapper">
 		<a class="label" href="hardware---wiring.html">
 HARDWARE &amp; WIRING		</a>
-</div>
-</div>
-	</li><li class="imMnMnMiddle imPage" data-link-paths=",/OpenFIRE-PICON-ESP32/%0A/hardware---wiring--vecchio-.html">
-<div class="label-wrapper">
-<div class="label-inner-wrapper">
-		<a class="label" href="hardware---wiring--vecchio-.html">
-HARDWARE &amp; WIRING (vecchio)		</a>
 </div>
 </div>
 	</li><li class="imMnMnMiddle imPage" data-link-paths=",/OpenFIRE-PICON-ESP32/%0A/software---firmware.html">
