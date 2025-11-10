@@ -15,7 +15,7 @@
 		<link rel="stylesheet" href="style/template.css?2025-2-11-0" media="screen" />
 		
 		<link rel="stylesheet" href="pluginAppObj/imFooter_pluginAppObj_03/custom.css" media="screen, print" />
-		<link rel="stylesheet" href="pcss/imsearch.css?2025-2-11-0-638983824982414335" media="screen,print" />
+		<link rel="stylesheet" href="pcss/imsearch.css?2025-2-11-0-638983948543549623" media="screen,print" />
 		<script src="res/jquery.js?2025-2-11-0"></script>
 		<script src="res/x5engine.js?2025-2-11-0" data-files-version="2025-2-11-0"></script>
 		
@@ -25,7 +25,7 @@
 			x5engine.utils.currentPagePath = 'imsearch.php';
 			x5engine.boot.push(function () { x5engine.imPageToTop.initializeButton({}); });
 		</script>
-		<link rel="icon" href="favicon.png?2025-2-11-0-638983824982394126" type="image/png" />
+		<link rel="icon" href="favicon.png?2025-2-11-0-638983948543549623" type="image/png" />
 	</head>
 	<body>
 		<div id="imPageExtContainer">
@@ -62,25 +62,18 @@ FRAME FILES .STL		</a>
 HARDWARE &amp; WIRING		</a>
 </div>
 </div>
-	</li><li class="imMnMnMiddle imPage" data-link-paths=",/OpenFIRE-PICON-ESP32/%0A/software---firmware.html">
+	</li><li class="imMnMnMiddle imPage" data-link-paths=",/OpenFIRE-PICON-ESP32/%0A/istruzioni-assemblaggio.html">
+<div class="label-wrapper">
+<div class="label-inner-wrapper">
+		<a class="label" href="istruzioni-assemblaggio.html">
+ISTRUZIONI ASSEMBLAGGIO		</a>
+</div>
+</div>
+	</li><li class="imMnMnLast imPage" data-link-paths=",/OpenFIRE-PICON-ESP32/%0A/software---firmware.html">
 <div class="label-wrapper">
 <div class="label-inner-wrapper">
 		<a class="label" href="software---firmware.html">
 SOFTWARE &amp; FIRMWARE		</a>
-</div>
-</div>
-	</li><li class="imMnMnMiddle imPage" data-link-paths=",/OpenFIRE-PICON-ESP32/%0A/resources---community.html">
-<div class="label-wrapper">
-<div class="label-inner-wrapper">
-		<a class="label" href="resources---community.html">
-RESOURCES &amp; COMMUNITY		</a>
-</div>
-</div>
-	</li><li class="imMnMnLast imPage" data-link-paths=",/OpenFIRE-PICON-ESP32/%0A/about-us-1.html">
-<div class="label-wrapper">
-<div class="label-inner-wrapper">
-		<a class="label" href="about-us-1.html">
-ABOUT US		</a>
 </div>
 </div>
 	</li></ul></nav></div><a id="imHeader_imMenuObject_02_after_menu" class="screen-reader-only-even-focused"></a><!-- UNSEARCHABLE END --><script>
@@ -138,25 +131,18 @@ FRAME FILES .STL		</a>
 HARDWARE &amp; WIRING		</a>
 </div>
 </div>
-	</li><li class="imMnMnMiddle imPage" data-link-paths=",/OpenFIRE-PICON-ESP32/%0A/software---firmware.html">
+	</li><li class="imMnMnMiddle imPage" data-link-paths=",/OpenFIRE-PICON-ESP32/%0A/istruzioni-assemblaggio.html">
+<div class="label-wrapper">
+<div class="label-inner-wrapper">
+		<a class="label" href="istruzioni-assemblaggio.html">
+ISTRUZIONI ASSEMBLAGGIO		</a>
+</div>
+</div>
+	</li><li class="imMnMnLast imPage" data-link-paths=",/OpenFIRE-PICON-ESP32/%0A/software---firmware.html">
 <div class="label-wrapper">
 <div class="label-inner-wrapper">
 		<a class="label" href="software---firmware.html">
 SOFTWARE &amp; FIRMWARE		</a>
-</div>
-</div>
-	</li><li class="imMnMnMiddle imPage" data-link-paths=",/OpenFIRE-PICON-ESP32/%0A/resources---community.html">
-<div class="label-wrapper">
-<div class="label-inner-wrapper">
-		<a class="label" href="resources---community.html">
-RESOURCES &amp; COMMUNITY		</a>
-</div>
-</div>
-	</li><li class="imMnMnLast imPage" data-link-paths=",/OpenFIRE-PICON-ESP32/%0A/about-us-1.html">
-<div class="label-wrapper">
-<div class="label-inner-wrapper">
-		<a class="label" href="about-us-1.html">
-ABOUT US		</a>
 </div>
 </div>
 	</li></ul></nav></div><a id="imStickyBar_imMenuObject_03_after_menu" class="screen-reader-only-even-focused"></a><!-- UNSEARCHABLE END --><script>

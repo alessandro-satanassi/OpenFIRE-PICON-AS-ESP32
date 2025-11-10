@@ -7,11 +7,10 @@ $imSettings['search']['general'] = array(
 	'menu_position' => 'left',
 	'defaultScope' => array(
 		'0' => 'index.html',
-		'6' => 'resources---community.html',
-		'7' => 'about-us-1.html',
 		'8' => 'frame-files-.stl.html',
 		'10' => 'software---firmware.html',
-		'11' => 'hardware---wiring.html'
+		'11' => 'hardware---wiring.html',
+		'12' => 'istruzioni-assemblaggio.html'
 	),
 	'extendedScope' => array(
 	)
