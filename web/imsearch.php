@@ -15,7 +15,7 @@
 		<link rel="stylesheet" href="style/template.css?2025-2-11-0" media="screen" />
 		
 		<link rel="stylesheet" href="pluginAppObj/imFooter_pluginAppObj_03/custom.css" media="screen, print" />
-		<link rel="stylesheet" href="pcss/imsearch.css?2025-2-11-0-638983948543549623" media="screen,print" />
+		<link rel="stylesheet" href="pcss/imsearch.css?2025-2-11-0-638984104615074701" media="screen,print" />
 		<script src="res/jquery.js?2025-2-11-0"></script>
 		<script src="res/x5engine.js?2025-2-11-0" data-files-version="2025-2-11-0"></script>
 		
@@ -25,7 +25,7 @@
 			x5engine.utils.currentPagePath = 'imsearch.php';
 			x5engine.boot.push(function () { x5engine.imPageToTop.initializeButton({}); });
 		</script>
-		<link rel="icon" href="favicon.png?2025-2-11-0-638983948543549623" type="image/png" />
+		<link rel="icon" href="favicon.png?2025-2-11-0-638984104615021321" type="image/png" />
 	</head>
 	<body>
 		<div id="imPageExtContainer">
@@ -35,7 +35,7 @@
 				<div id="imPage">
 					<header id="imHeader">
 						<h1 class="imHidden">Ricerca - OpenFIRE PICON Esp32</h1>
-						<div id="imHeaderObjects"><div id="imHeader_imObjectTitle_01_wrapper" class="template-object-wrapper"><div id="imHeader_imObjectTitle_01"><span id ="imHeader_imObjectTitle_01_text" >OpenFIRE PICON Esp32</span></div></div><div id="imHeader_imMenuObject_02_wrapper" class="template-object-wrapper"><!-- UNSEARCHABLE --><a id="imHeader_imMenuObject_02_skip_menu" href="#imHeader_imMenuObject_02_after_menu" class="screen-reader-only-even-focused">Salta menù</a><div id="imHeader_imMenuObject_02"><nav id="imHeader_imMenuObject_02_container"><button type="button" class="clear-button-style hamburger-button hamburger-component" aria-label="Mostra menù"><span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span></button><div class="hamburger-menu-background-container hamburger-component">
+						<div id="imHeaderObjects"><div id="imHeader_imObjectTitle_01_wrapper" class="template-object-wrapper"><div id="imHeader_imObjectTitle_01"><span id ="imHeader_imObjectTitle_01_text" >OpenFIRE PICON-AS Esp32</span></div></div><div id="imHeader_imMenuObject_02_wrapper" class="template-object-wrapper"><!-- UNSEARCHABLE --><a id="imHeader_imMenuObject_02_skip_menu" href="#imHeader_imMenuObject_02_after_menu" class="screen-reader-only-even-focused">Salta menù</a><div id="imHeader_imMenuObject_02"><nav id="imHeader_imMenuObject_02_container"><button type="button" class="clear-button-style hamburger-button hamburger-component" aria-label="Mostra menù"><span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span></button><div class="hamburger-menu-background-container hamburger-component">
 	<div class="hamburger-menu-background menu-mobile menu-mobile-animated hidden">
 		<button type="button" class="clear-button-style hamburger-menu-close-button" aria-label="Chiudi"><span aria-hidden="true">&times;</span></button>
 	</div>
@@ -98,7 +98,7 @@ $(function () {
 $(function () {$('#imHeader_imMenuObject_02_container ul li, #imHeader_imMenuObject_02_container .multiple-column').not('.imMnMnSeparator').each(function () {    var $this = $(this), timeout = 0;    $this.on('mouseenter', function () {        if($(this).parents('#imHeader_imMenuObject_02_container-menu-opened').length > 0) return;         clearTimeout(timeout);         setTimeout(function () { $this.children('ul, .multiple-column').stop(false, false).addClass('animated'); }, 250);    }).on('mouseleave', function () {        if($(this).parents('#imHeader_imMenuObject_02_container-menu-opened').length > 0) return;         timeout = setTimeout(function () { $this.children('ul, .multiple-column').stop(false, false).removeClass('animated'); }, 250);    });});});
 
 </script>
-</div><div id="imHeader_imObjectImage_03_wrapper" class="template-object-wrapper"><div id="imHeader_imObjectImage_03"><div id="imHeader_imObjectImage_03_container"><img src="images/pxl_20240317_190348763.png"  width="70" height="53" />
+</div><div id="imHeader_imObjectImage_03_wrapper" class="template-object-wrapper"><div id="imHeader_imObjectImage_03"><div id="imHeader_imObjectImage_03_container"><img src="images/Picon-AS-orrizzontale.png"  width="70" height="53" />
 </div></div></div></div>
 					</header>
 					<div id="imStickyBarContainer">
