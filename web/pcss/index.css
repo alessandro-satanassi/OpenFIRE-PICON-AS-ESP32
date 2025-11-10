@@ -583,6 +583,8 @@ max-height: 100%; position: absolute; top: 0; bottom: 0; inset-inline-start: 3px
 #imTextObject_61 .text-container .grid-prop.current-tab {z-index: 1; opacity: 1;  }
 #imTextObject_61 .text-container .grid-prop {grid-area: 1 / 1 / 2 / 2; opacity: 0; box-sizing: border-box; position: relative;  }
 #imTextObject_61 .text-container .text-tab-content.detach {position: absolute; top: 0; inset-inline-start: 0px; width: 100%; display: none; }
+#imPageRowGraphics_5 { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
+#imPageRowGraphics_5 { background-color: rgba(183, 183, 183, 1); }
 #imCell_62 { grid-template-columns: 100%; position: relative; box-sizing: border-box; }
 #imTextObject_62 { position: relative; align-self: center; justify-self: center; max-width: 100%; box-sizing: border-box; z-index: 3; }
 #imCellStyleGraphics_62 { grid-row: 1 / -1; grid-column: 1 / -1; background-color: rgba(235, 235, 235, 1);  }
