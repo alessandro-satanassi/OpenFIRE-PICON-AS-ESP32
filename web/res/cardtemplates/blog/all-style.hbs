@@ -19,7 +19,13 @@
             background: rgb({{card.txtBlock.description.style.textColor.r}},{{card.txtBlock.description.style.textColor.g}},{{card.txtBlock.description.style.textColor.b}}) !important;
         }
         {{misc.rootSelector}} .swiper-button-next, {{misc.rootSelector}} .swiper-button-prev {
-            color: rgb({{card.txtBlock.description.style.textColor.r}},{{card.txtBlock.description.style.textColor.g}},{{card.txtBlock.description.style.textColor.b}}) !important;
+            color: #000000 !important;
+        }
+        {{misc.rootSelector}} .swiper-button-next:after {
+            text-shadow: -3px 0px #FFFFFF;
+        }
+        {{misc.rootSelector}} .swiper-button-prev:after {
+            text-shadow: 3px 0px #FFFFFF;
         }
         {{misc.rootSelector}} > div > .swiper > .swiper-wrapper > x5engine-card {
             display: grid;

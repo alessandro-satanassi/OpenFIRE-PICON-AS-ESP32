@@ -246,6 +246,7 @@
 	$l10n['video_unmute_button'] = 'Attiva audio';
 	$l10n['welcomepage_go_to_home'] = 'Vai all\'homepage';
 	$l10n['welcomepage_title'] = 'Pagina di ingresso';
+	$l10n['magicsite_created_with'] = 'Creato con';
 
 
 // End of file l10n.php

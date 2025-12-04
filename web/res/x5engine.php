@@ -3524,13 +3524,17 @@ class MySQLiDriver implements DatabaseAccess
                         if ($act_field["Field"] == $key) {
                             // Check "null" and "more" configuration
                             $explicitlyNull = isset($value['more']) && strtolower($value['more']) == 'null';
-                            $explicitlyNotNull = (isset($value['more']) && strtolower($value['more']) == 'not null') || !isset($value['null']) || !$value['null'];
+                            $explicitlyNotNull = isset($value['more']) && strtolower($value['more']) == 'not null';
+                            if (!$explicitlyNull && !$explicitlyNotNull) {
+                                $explicitlyNull = isset($value['null']) && $value['null'];
+                                $explicitlyNotNull = !isset($value['null']) || !$value['null'];
+                            }
 
                             // Check if some actual "int" fields increment their length: if yes, consider them in the alter query
                             if ($type == "int") {
                                 $fixAutoIncrement = false;
                                 // WSX5-2950: This fix some situations where an existing field lost his "auto increment" property. If there is a row with this field set to 0, update it to the next highest value.
-                                if (isset($value["auto_increment"]) && $value["auto_increment"] && !strpos($act_field["Extra"], "auto_increment")) {
+                                if (isset($value["auto_increment"]) && $value["auto_increment"] && strpos($act_field["Extra"], "auto_increment") === false) {
                                     $fixAutoIncrement = true;
                                     $q = $this->db->query("SELECT * FROM `" . $this->db_name . "`.`" . $name . "` WHERE `" . $key . "` = 0");
                                     if ($q->num_rows > 0) {
@@ -5767,7 +5771,7 @@ class imSearch {
                 $page_end = strpos($file_content, "</main>") + strlen("</main>");
                 if ($page_end == false)
                     $page_end = strpos($file_content, "</body>") + strlen("</body>");
-                $file_content = strip_tags(substr($file_content, $page_pos, $page_end-$page_pos));
+                $file_content = strip_tags(substr($file_content, $page_pos, $page_end-$page_pos),"<ol><ul><li>");
                 $t_file_content = imstrtolower($file_content);
 
                 foreach ($queries as $query) {
@@ -5800,7 +5804,7 @@ class imSearch {
                 if (($i > $this->page * $this->results_per_page) && ($i <= ($this->page + 1) * $this->results_per_page)) {
                     $title = strip_tags($found_title[$name]);
                     $file = $found_content[$name];
-                    $file = strip_tags($file);
+                    $file = strip_tags($file,"<ol><ul><li>");
                     $ap = 0;
                     $filelen = imstrlen($file);
                     $text = "";
@@ -5836,7 +5840,7 @@ class imSearch {
                     $text = str_replace("\n", " ", $text);
                     $text = str_replace("\t", " ", $text);
                     $text = trim($text);
-                    $html .= "<div class=\"imSearchPageResult\"><h3><a class=\"imCssLink\" href=\"" . $name . "\">" . strip_tags($title, "<b><strong>") . "</a></h3>" . strip_tags($text, "<b><strong>") . "<div class=\"imSearchLink\"><a class=\"imCssLink\" href=\"" . $name . "\">" . (imsubstr($imSettings['general']['url'], -1) != "/" ? $imSettings['general']['url'] . "/" : $imSettings['general']['url']) . $name . "</a></div></div>\n";
+                    $html .= "<div class=\"imSearchPageResult\"><h3><a class=\"imCssLink\" href=\"" . $name . "\">" . strip_tags($title, "<b><strong>") . "</a></h3>" . strip_tags($text, "<b><strong><ol><ul><li>") . "<div class=\"imSearchLink\"><a class=\"imCssLink\" href=\"" . $name . "\">" . (imsubstr($imSettings['general']['url'], -1) != "/" ? $imSettings['general']['url'] . "/" : $imSettings['general']['url']) . $name . "</a></div></div>\n";
                 }
             }
             $html = preg_replace_callback('/\\s+/', function ($matches) {

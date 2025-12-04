@@ -247,4 +247,5 @@
 	l('video_unmute_button', 'Attiva audio');
 	l('welcomepage_go_to_home', 'Vai all\'homepage');
 	l('welcomepage_title', 'Pagina di ingresso');
+	l('magicsite_created_with', 'Creato con');
 })( x5engine );
