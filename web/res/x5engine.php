@@ -1235,6 +1235,8 @@ class imBlog
 
 		}
 
+        $misc["objectIdPrefix"] = "";
+
 		return $misc;
 
 	}
@@ -1784,8 +1786,10 @@ class imBlog
                 $card["txtBlock"]["button"]["style"]["font"]["style"] = "italic";
             }
             $misc = $this->customCardMisc( "#imBlogContent .imBlogHighlightedCards", $cardStyle );
+            $misc["cardBreakpoint"] = "100%";
             $misc['cardLayoutCardArrangement'] = "slideshow";
             $misc['cardContentLayout'] = "cover-as-background";
+            $misc["objectIdPrefix"] = "highlighted_";
             $miscGlobal = $this->getCalculatedGlobalData( $card, $misc );    
             $blogPostsData = array();
             for ($i = 0; $i < min($imSettings['blog']['card_style']['highlight']['count'], $count); $i++) {
@@ -4835,10 +4839,10 @@ class ImForm
                         $txtData .= $label . $field['value'] . "\r\n";
                     // Is it an email?
                     if (preg_match('/^([a-z0-9])(([-a-z0-9._])*([a-z0-9]))*\@([a-z0-9])' . '(([a-z0-9-])*([a-z0-9]))+' . '(\.([a-z0-9])([-a-z0-9_-])?([a-z0-9])+)+$/i', $field['value'])) {
-                        $htmData .= "<tr valign=\"top\"><td width=\"25%\" style=\"[email:contentStyle]\"><b>" . str_replace(array("\\'", '\\"'), array("'", '"'), $label) . "</b></td><td style=\"[email:contentStyle]\"><a href=\"mailto:" . $field['value'] . "\">". $field['value'] . "</a></td></tr>\r\n";
+                        $htmData .= "<tr valign=\"top\"><td width=\"25%\" style=\"[email:contentStyle]\"><b>" . str_replace(array("\\'", '\\"'), array("'", '"'), $label) . "</b></td><td style=\"[email:contentStyle]\"><a style=\"color:inherit; text-decoration:underline;\" href=\"mailto:" . $field['value'] . "\">". $field['value'] . "</a></td></tr>\r\n";
                     } else if (preg_match('/^http[s]?:\/\/[a-zA-Z0-9\.\-]{2,}\.[a-zA-Z]{2,}/', $field['value'])) {
                         // Is it an URL?
-                        $htmData .= "<tr valign=\"top\"><td width=\"25%\" style=\"[email:contentStyle]\"><b>" . str_replace(array("\\'", '\\"'), array("'", '"'), $label) . "</b></td><td style=\"[email:contentStyle]\"><a href=\"" . $field['value'] . "\">". $field['value'] . "</a></td></tr>\r\n";
+                        $htmData .= "<tr valign=\"top\"><td width=\"25%\" style=\"[email:contentStyle]\"><b>" . str_replace(array("\\'", '\\"'), array("'", '"'), $label) . "</b></td><td style=\"[email:contentStyle]\"><a style=\"color:inherit; text-decoration:underline;\" href=\"" . $field['value'] . "\">". $field['value'] . "</a></td></tr>\r\n";
                     } else {
                         $htmData .= "<tr valign=\"top\"><td width=\"25%\" style=\"[email:contentStyle]\"><b>" . str_replace(array("\\'", '\\"'), array("'", '"'), $label) . "</b></td><td style=\"[email:contentStyle]\">" . str_replace(array("\\'", '\\"'), array("'", '"'), $field['value']) . "</td></tr>\r\n";
                     }

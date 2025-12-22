@@ -6,18 +6,18 @@
 		<meta charset="utf-8" />
 		<!--[if IE]><meta http-equiv="ImageToolbar" content="False" /><![endif]-->
 		<meta name="author" content="Alessandro Satanassi" />
-		<meta name="generator" content="Incomedia WebSite X5 Evo 2025.3.3 - www.websitex5.com" />
+		<meta name="generator" content="Incomedia WebSite X5 Evo 2025.3.4 - www.websitex5.com" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		
-		<link rel="stylesheet" href="style/reset.css?2025-3-3-0" media="screen,print" />
-		<link rel="stylesheet" href="style/print.css?2025-3-3-0" media="print" />
-		<link rel="stylesheet" href="style/style.css?2025-3-3-0" media="screen,print" />
-		<link rel="stylesheet" href="style/template.css?2025-3-3-0" media="screen" />
+		<link rel="stylesheet" href="style/reset.css?2025-3-4-0" media="screen,print" />
+		<link rel="stylesheet" href="style/print.css?2025-3-4-0" media="print" />
+		<link rel="stylesheet" href="style/style.css?2025-3-4-0" media="screen,print" />
+		<link rel="stylesheet" href="style/template.css?2025-3-4-0" media="screen" />
 		
 		<link rel="stylesheet" href="pluginAppObj/imFooter_pluginAppObj_03/custom.css" media="screen, print" />
-		<link rel="stylesheet" href="pcss/imsearch.css?2025-3-3-0-638991478185808076" media="screen,print" />
-		<script src="res/jquery.js?2025-3-3-0"></script>
-		<script src="res/x5engine.js?2025-3-3-0" data-files-version="2025-3-3-0"></script>
+		<link rel="stylesheet" href="pcss/imsearch.css?2025-3-4-0-639008223639697883" media="screen,print" />
+		<script src="res/jquery.js?2025-3-4-0"></script>
+		<script src="res/x5engine.js?2025-3-4-0" data-files-version="2025-3-4-0"></script>
 		
 		<script src="pluginAppObj/imFooter_pluginAppObj_03/main.js"></script>
 		<script>
@@ -25,7 +25,7 @@
 			x5engine.utils.currentPagePath = 'imsearch.php';
 			x5engine.boot.push(function () { x5engine.imPageToTop.initializeButton({}); });
 		</script>
-		<link rel="icon" href="favicon.png?2025-3-3-0-638991478185788005" type="image/png" />
+		<link rel="icon" href="favicon.png?2025-3-4-0-639008223639677832" type="image/png" />
 	</head>
 	<body>
 		<div id="imPageExtContainer">
