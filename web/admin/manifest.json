@@ -1,11 +1,11 @@
 {
-	"name": "OpenFIRE PICON Esp32 Admin",
-	"start_url": "https://alessandro-satanassi.github.io/OpenFIRE-PICON-ESP32/ /admin/",
+	"name": "OpenFIRE PICON-AS Esp32 Admin",
+	"start_url": "https://alessandro-satanassi.github.io/OpenFIRE-PICON-AS-ESP32/ /admin/",
 	"display": "standalone",
 	"background_color": "#E5E5E5",
 	"theme_color": "#F28D4F",
-	"scope": "https://alessandro-satanassi.github.io/OpenFIRE-PICON-ESP32/ /admin/",
+	"scope": "https://alessandro-satanassi.github.io/OpenFIRE-PICON-AS-ESP32/ /admin/",
 	"icons": [
-		{ "src": "https://alessandro-satanassi.github.io/OpenFIRE-PICON-ESP32/ /admin/images/logo_m0cog7nr.png", "type": "image/png", "sizes": "126x126" }
+		{ "src": "https://alessandro-satanassi.github.io/OpenFIRE-PICON-AS-ESP32/ /admin/images/logo_m0cog7nr.png", "type": "image/png", "sizes": "126x126" }
 	]
 }

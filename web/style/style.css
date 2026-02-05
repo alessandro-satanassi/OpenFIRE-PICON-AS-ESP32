@@ -352,7 +352,7 @@ stroke-width: 1;
 .browser-comp-message p { font-family: Tahoma, Sans-serif; font-size: 12pt; margin: 20px 0; text-align: center; color: #fff; }
 .browser-comp-message.severity-warning p { text-align: start; display: inline; margin: 0 5px; }
 .browser-comp-message a { font-family: Tahoma, Sans-serif; font-size: 12pt; font-weight: bold; color: #00d7f7; text-decoration: none; }
-.x5captcha-wrap { text-align: center; box-sizing: border-box; width: 100%; padding-inline-end: 10px; }
+.x5captcha-wrap { text-align: center; box-sizing: border-box; width: 100%; }
 .x5captcha-wrap label { padding: 0; }
 .x5captcha-wrap input { width: 120px; }
 .captcha-container { display: block; margin: 3px auto 2px; width: 160px; height: 32px; border: 1px solid #BBBBBB; }

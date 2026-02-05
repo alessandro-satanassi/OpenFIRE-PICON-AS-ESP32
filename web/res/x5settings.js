@@ -4,11 +4,11 @@
 		p = s.currentPath,
 		b = x.boot;
 
-	s.siteId = '786A33E6FE36146F1E7BD44C8057F20C';
+	s.siteId = '6874551780E280908EA7347CCEB4DF0D';
 	s.dateFormat = 'dd MMM yyyy';
 	s.dateFormatExt = 'dddd dd MMM yyyy';
 	s.rtl = false;
-	s.version = '2025-3-4-0';
+	s.version = '2025-3-6-0';
 	b.push(function () {
 		x.setupDateTime();
 		x.imAccess.showLogout();

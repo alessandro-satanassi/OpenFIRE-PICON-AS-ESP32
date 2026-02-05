@@ -36,7 +36,7 @@
                 <?php $i = 0; foreach ($products as $value): ?>
                     <?php $url = $baseurl . "cart/x5cart.php?download=" . $value['download_hash']; ?>
                     <tr valign="top" style="[email:contentFontFamily] vertical-align: top"<?php ($i%2 ? " bgcolor=\"#EEEEEE\"" : "") ?>>
-                        <td style="[email:contentFontFamily] border: 1px solid [email:bodyBackgroundBorder];"><?php echo $value["name"] ?><br /><?php echo $value["description"] ?></td>
+                        <td style="[email:contentFontFamily] border: 1px solid [email:bodyBackgroundBorder];"><?php echo $value["name"] ?><br /><?php echo isset($value["description"]) ? $value["description"] : "" ?></td>
                         <td style="[email:contentFontFamily] border: 1px solid [email:bodyBackgroundBorder]; text-align: right;"><?php echo $value["quantity"] ?></td>
                         <?php if (isset($value['image'])): ?>
                             <td style="[email:contentFontFamily] border: 1px solid [email:bodyBackgroundBorder];"><br /><img src="<?php echo $baseurl . $value['image'] ?>" alt="" style="max-width: 250px;" /></td>
@@ -70,7 +70,7 @@
                     <td style="[email:contentFontFamily]<?php echo ($i%2 ? " color: [email:bodyTextColorOdd]" : "") ?>"><b><?php echo str_replace(array("\\'", '\\"'), array("'", '"'), $value['label']) ?>:</b></td>
                     <?php
                         // Attachment file: strip its name removing the timestamp prefix
-                        if ($value['id'] == 'Attachment') {
+                        if ( isset($value['id']) && $value['id'] == 'Attachment') {
                             $splitedFileName = explode("_", $value['value'], 2);
                             $fieldValue = $splitedFileName[1];
                         }

@@ -535,6 +535,7 @@
         text-decoration: none; 
         margin:0px;
         padding:0px;
+        overflow-wrap: anywhere;
     }
 
     {{misc.rootSelector}} .im-cc-BlogPostCard .im-cc-BlogPostDetails {
@@ -551,7 +552,8 @@
                 {{/if}}
             {{/if}}
         {{/if}}
-
+        overflow-wrap: anywhere;
+        overflow: hidden;
     }
 
     {{misc.rootSelector}} .im-cc-BlogPostCard .im-cc-BlogPostCardCategory,
@@ -578,6 +580,7 @@
         text-decoration: none; 
         text-wrap: nowrap;
         white-space: nowrap;
+        overflow-wrap: anywhere;
     }
     {{misc.rootSelector}} .im-cc-BlogPostCard .im-cc-BlogPostCardCategory > svg,
     {{misc.rootSelector}} .im-cc-BlogPostCard .im-cc-BlogPostCardAuthor > svg,

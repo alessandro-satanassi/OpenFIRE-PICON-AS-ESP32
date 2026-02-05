@@ -29,11 +29,11 @@
     $links = "";
     $posturl = $baseposturl . $comment['gbid'] . "&";
 
-    if ($comment['abuse'] == "1") {
+    if (isset($comment['abuse']) && $comment['abuse'] == "1") {
         $links .= "<span class=\"bottom icon-large fa fa-exclamation-triangle fore-yellow\" title=\"" . l10n('admin_comment_abuse') . "\"></span> |";
         $links .= "<a class=\"fa icon-large fa-level-up fore-green\" href=\"${posturl}unabuse=${comment['id']}\" title=\"" . l10n("blog_abuse_remove", "Remove abuse")  . "\"></a>";
     }
-    if ($comment['approved'] == "1") {
+    if (isset($comment['approved']) && $comment['approved'] == "1") {
         $links .= "<a class=\"fa icon-large fa-thumbs-down fore-yellow\" onclick=\"return confirm('" . str_replace("'", "\\'", l10n('blog_unapprove_question'))  . "')\" href=\"${posturl}disable=${comment['id']}\" title=\"" . l10n('blog_unapprove') . "\"></a>";
     } else {
         $links .= "<a class=\"fa icon-large fa-thumbs-up fore-green\" onclick=\"return confirm('" . str_replace("'", "\\'", l10n('blog_approve_question')) . "')\" href=\"${posturl}enable=${comment['id']}\" title=\"" . l10n('blog_approve') . "\"></a>";
@@ -44,7 +44,7 @@
     // CSS Class
     // ---------
     
-    $cssClass = ($comment['abuse'] == "1" ? "background-yellow-light" : ($i % 2 ? '' : 'background-blue-light'));
+    $cssClass = (isset($comment['abuse']) && $comment['abuse'] == "1" ? "background-yellow-light" : ($i % 2 ? '' : 'background-blue-light'));
 
     // ---------
     // Stars

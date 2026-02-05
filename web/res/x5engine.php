@@ -92,48 +92,48 @@ class imBlog
      * @param Array $array The URL array ($_GET)
      * @return Array An associative array containing the post data
      */
-    function parseUrlArray($array)
-    {
+    function parseUrlArray($array){
         global $imSettings;
         
         $data = array('valid' => true);
-        $keys = array_keys(@$_GET);
+        $keys = array_keys(@$array);
 
-        if (isset($_GET['start']) && isset($_GET['length'])) {
-            $data['start'] = @$_GET['start'];
-            $data['length'] = @$_GET['length'];
+        if (isset($array['start']) && isset($array['length'])) {
+            $data['start'] = htmlspecialchars(@$array['start']);
+            $data['length'] = htmlspecialchars(@$array['length']);
         }
         
-        if(isset($_GET['id'])) {
-            $data['id'] = @$_GET['id'];
-            $data['valid'] = isset($imSettings['blog']['posts'][$data['id']]) && $imSettings['blog']['posts'][$data['id']]['utc_time'] < time();
+        $cur_time = time();
+        if(isset($array['id'])) {
+            $data['id'] = htmlspecialchars(@$array['id']);
+            $data['valid'] = isset($imSettings['blog']['posts'][$data['id']]) && $imSettings['blog']['posts'][$data['id']]['utc_time'] < $cur_time;
         }
-        else if(isset($_GET['category'])) {
-            $category = $this->getUnescapedCategory(@$_GET['category']);
+        else if(isset($array['category'])) {
+            $category = $this->getUnescapedCategory(@$array['category']);
             if ($category !== NULL) {
                 $data['category'] = $category;
             }
         }
-        else if(isset($_GET['author'])) {
-            $author = $this->getUnescapedAuthor(@$_GET['author']);
+        else if(isset($array['author'])) {
+            $author = $this->getUnescapedAuthor(@$array['author']);
             if ($author !== NULL) {
                 $data['author'] = $author;
             }
         }
-        else if(isset($_GET['tag'])) {
-            $data['tag'] = @$_GET['tag'];
+        else if(isset($array['tag'])) {
+            $data['tag'] = htmlspecialchars(@$array['tag']);
         }
-        else if(isset($_GET['month'])) {
-            $data['month'] = @$_GET['month'];
+        else if(isset($array['month'])) {
+            $data['month'] = htmlspecialchars(@$array['month']);
         }
-        else if(isset($_GET['search'])) {
-            $data['search'] = @$_GET['search'];
+        else if(isset($array['search'])) {
+            $data['search'] = htmlspecialchars(@$array['search']);
         }
         
         if (count($data) == 1 && count($keys) > 0) {
             if ($this->slugExists($keys[0])) {
                 $id = $this->getSlugId($keys[0]);
-                if ($imSettings['blog']['posts'][$id]['utc_time'] < time()) {
+                if ($imSettings['blog']['posts'][$id]['utc_time'] < $cur_time) {
                     $data['slug'] = $keys[0];
                     $data['id'] = $id;
                 } else {
@@ -280,8 +280,8 @@ class imBlog
 
     /**
      * Get the open graph tags for a post
-     * @param  $id   The post id
-     * @param  $tabs The tabs (String) to prepend to each tag
+     * @param  String $id   The post id
+     * @param  String $tabs The tabs (String) to prepend to each tag
      * @return string      The HTML tags
      */
     function getOpengraphTags($id, $tabs = "") {
@@ -625,16 +625,11 @@ class imBlog
     function getLastModified()
     {
         global $imSettings;
-        $c = $this->comments->getComments($_GET['id']);
-        if ($_GET['id'] != "" && $c != -1) {
+        if (isset($_GET['id']) && $_GET['id'] != "" && $c != -1) {
+            $c = $this->comments->getComments($_GET['id']);
             return $this->formatTimestamp($c[count($c)-1]['timestamp']);
         } else {
             $utcTime = time();
-            foreach ($imSettings['blog']['posts'] as $id => $post) {
-                if ($post['utc_time'] < $utcTime) {
-
-                }
-            }
             $last_post = $imSettings['blog']['posts'];
             $last_post = array_shift($last_post);
             return $last_post['timestamp'];
@@ -691,7 +686,7 @@ class imBlog
      * Show a post
      *
      * @param string  $slug  the post slug
-     * @param inetger $ext   Set 1 to show as extended
+     * @param integer $ext   Set 1 to show as extended
      *
      * @return void
      */
@@ -891,7 +886,7 @@ class imBlog
      * @param string $id   The post id
      * @param string $tabs The script tag prefix
      *
-     * @return void
+     * @return string
      */
     function printAMPIncludes($id, $tabs) {
         global $imSettings;
@@ -1085,7 +1080,10 @@ class imBlog
         global $imSettings;
 		$breakPoints = $imSettings['breakpoints'];
 
-		if ( isset( $breakPoints ) && count( $breakPoints ) > 0 ) {
+        $numBreakPoints = isset( $breakPoints ) ? count( $breakPoints ) : 0;
+
+		if ( $numBreakPoints > 0 ) {
+
 			$minContentW = 200;
 			$minCardW = $minContentW;
 			$minCardW = $minCardW + $card["margin"] + $card["margin"];
@@ -1095,7 +1093,7 @@ class imBlog
 
 			$strPieceBPdesktop = "";
 			$strPieceCPRdesktop = "";
-			for ( $i = 0 ; $i < count( $breakPoints ) ; $i++ ) {
+			for ( $i = 0 ; $i < $numBreakPoints ; $i++ ) {
 
 				$maxAvailW = $breakPoints[$i]["end"];
 				if ( $breakPoints[$i]["end"] == 0 ) {
@@ -1162,7 +1160,7 @@ class imBlog
 
 		}
 
-        if (count( $breakPoints ) == 1){
+        if ($numBreakPoints == 1){
             $layoutVertMediaQuery = null;
         }
 
@@ -1355,7 +1353,7 @@ class imBlog
 		$calculated["currentPath"] = "../";
 		$calculated["id"] = $bp["id"];
 		$calculated["isHighlighted"] = false;
-        if ( $bp["isHighlighted"] != null ) {
+        if ( isset($bp["isHighlighted"]) && $bp["isHighlighted"] != null ) {
             $calculated["isHighlighted"] = $bp["isHighlighted"];
         }
 
@@ -1393,7 +1391,8 @@ class imBlog
 		$calculated = array();
 
 		$bpsKeys = array_keys( $bps );
-		for ( $i=0 ; $i<count($bpsKeys) ; $i++ ) {
+        $bpsKeysCount = count($bpsKeys);
+		for ( $i=0 ; $i<$bpsKeysCount ; $i++ ) {
 
 			$bp = $bps[$bpsKeys[$i]];
 
@@ -1515,7 +1514,8 @@ class imBlog
 
 		$blogPostsData = array();
         $highlightEnabled = $imSettings['blog']['card_style']['highlight']['mode'] != "none";
-		for ( $i = 0 ; $i < count($postIds) ; $i++) {
+        $postIdsCount = count($postIds);
+		for ( $i = 0 ; $i < $postIdsCount ; $i++) {
 			$blogPostItemId = $postIds[$i];
 			$blogPostItem = $imSettings['blog']['posts'][$blogPostItemId];
             if ( $highlightEnabled && $i < $imSettings['blog']['card_style']['highlight']['count'] ){
@@ -2075,7 +2075,8 @@ END;
             }
             sort($categories);
             echo "<ul>";
-            for ($i = 0; $i < count($categories) && $i < $n; $i++) {
+            $categoriesCount = count($categories);
+            for ($i = 0; $i < $categoriesCount && $i < $n; $i++) {
                 if ($categories[$i] != "") {
                     echo "<li><a href=\"?category=" . urlencode(str_replace(' ', '_', $categories[$i])) . "\">" . $categories[$i] . "</a></li>";
                 }
@@ -2105,7 +2106,8 @@ END;
             }
             sort($authors);
             echo "<ul>";
-            for ($i = 0; $i < count($authors) && $i < $n; $i++) {
+            $authorsCount = count($authors);
+            for ($i = 0; $i < $authorsCount && $i < $n; $i++) {
                 if ($authors[$i] != "") {
                     echo "<li><a href=\"?author=" . urlencode(str_replace(' ', '_', $authors[$i])) . "\">" . $authors[$i] . "</a></li>";
                 }
@@ -2221,7 +2223,8 @@ END;
         $posts = array_values($this->getPosts());
         if (is_array($posts)) {
             echo "<ul>";
-            for ($i = 0; $i < count($posts) && $i < $n; $i++) {
+            $postsCount = count($posts);
+            for ($i = 0; $i < $postsCount && $i < $n; $i++) {
                 echo "<li><a href=\"" . $posts[$i]['rel_url'] . "\">" . $posts[$i]['title'] . "</a></li>";
             }
             echo "</ul>";
@@ -2249,7 +2252,13 @@ class Configuration
     {
         global $imSettings;
 
-        if (!isset($imSettings['analytics']) || $imSettings['analytics']['type'] != 'wsx5analytics') {
+        if (
+            !isset($imSettings['analytics']) || 
+            !isset($imSettings['analytics']['database']) || 
+            !isset($imSettings['analytics']['database']['table']) || 
+            !isset($imSettings['analytics']['database']['id']) || 
+            $imSettings['analytics']['type'] != 'wsx5analytics'
+        ) {
             return null;
         }
 
@@ -2317,7 +2326,11 @@ class Configuration
 
         if (!self::$privateArea) {
             self::$privateArea = new imPrivateArea();
-            if (isset($imSettings['access']['dbid'])) {
+            if ( 
+                isset($imSettings['access']['dbid']) && 
+                isset($imSettings['access']['dbtable']) && 
+                isset($imSettings['access']['datadbtable']) 
+            ) {
                 $db = getDbData($imSettings['access']['dbid']);
                 self::$privateArea->setDbData(ImDb::from_db_data($db), $imSettings['access']['dbtable'], $imSettings['access']['datadbtable']);
             }
@@ -2349,10 +2362,10 @@ class Configuration
         $dynObj = new DynamicObject($id);
         $dynObj->setDefaultText(str_replace(array("\n", "\r"), array("<br />", ""), $data['defaultContent']));
 
-        if (isset($data['dbid'])) {
+        if ( isset($data['dbid']) && isset($data['dbtable']) ) {
             $db = getDbData($data['dbid']);
             $dynObj->loadFromDb(ImDb::from_db_data($db), $data['dbtable']);
-        } else if (isset($data['subfolder'])) {
+        } else if ( isset($data['subfolder']) ) {
             $dynObj->loadFromFile(pathCombine(array($imSettings['general']['public_folder'], $data['subfolder'])));
         }
 
@@ -2448,7 +2461,8 @@ class X5Captcha {
           </head>
           <body style=\"margin: 0; padding: 0; border-collapse: collapse;\">";
 
-        for ($i = 0; $i < strlen($sCode); $i++) {
+        $len = strlen($sCode);
+        for ($i = 0; $i < $len; $i++) {
             $text .= "<img style=\"margin:0; padding:0; border: 0; border-collapse: collapse; width: 32px; height: 32px; position: absolute; top: 0; inset-inline-start: " . (32 * $i) . "px;\" src=\"imcpa_".$this->nameList[substr($sCode, $i, 1)].".gif\" alt=\"\" width=\"32\" height=\"32\">";
         }
 
@@ -2506,7 +2520,7 @@ class ReCaptcha {
 
     /**
      * Check the response
-     * @param $response The response to be checked
+     * @param string $response The response to be checked
      */
     function check($response)
     {
@@ -2606,9 +2620,11 @@ class ImComment
             $comments = $xml->parse_string($xmlstring);
             if ($comments !== false && is_array($comments)) {
                 $tc = array();
-                if (!isset($comments['comment'][0]) || !is_array($comments['comment'][0]))
+                if (!isset($comments['comment'][0]) || !is_array($comments['comment'][0])){
                     $comments['comment'] = array($comments['comment']);
-                for ($i = 0; $i < count($comments['comment']); $i++) {
+                }
+                $commentsCount = count($comments['comment']);
+                for ($i = 0; $i < $commentsCount; $i++) {
                     foreach ($comments['comment'][$i] as $key => $value) {
                         if ($key == "timestamp" && strpos($value, "-") == 2) {
                             // The v8 and v9 timestamp was inverted. For compatibility, let's convert it to the correct format.
@@ -2657,7 +2673,8 @@ class ImComment
         }
         $f = @file_get_contents($file);
         $f = explode("\n", $f);
-        for ($i = 0;$i < count($f)-1; $i += 6) {
+        $lineCount = count($f);
+        for ($i = 0;$i < $lineCount-1; $i += 6) {
             $c[$i/6]['id'] = $i / 6;
             $c[$i/6]['name'] = stripslashes($f[$i]);
             $c[$i/6]['email'] = $f[$i+1];
@@ -2767,7 +2784,8 @@ class ImComment
         // Find where the comments has this field
         // This is useful to order using a field which is not present in every comment (like the ts field, which is missing in the stars-only vote type)
         $comment = null;
-        for ($i=0; $i < count($this->comments) && $comment == null; $i++) { 
+        $commentsCount = count($this->comments);
+        for ($i=0; $i < $commentsCount && $comment == null; $i++) { 
             if (isset($this->comments[$i][$orderby]))
                 $comment = $this->comments[$i];
         }
@@ -2918,7 +2936,8 @@ class ImComment
         if (isset($this->comments[$n])) {
             $comments = $this->comments;
             $this->comments = array();
-            for ($i = 0; $i < count($comments); $i++)
+            $commentsCount = count($comments);
+            for ($i = 0; $i < $commentsCount; $i++)
                 if ($i != $n)
                     $this->comments[] = $comments[$i];
             return true;
@@ -2987,7 +3006,8 @@ class ImComment
 
         $matches = array();
         preg_match_all('~<a.*>~isU', $str, $matches);
-        for ($i = 0; $i < count($matches[0]); $i++) {
+        $matchesCount = count($matches[0]);
+        for ($i = 0; $i < $matchesCount; $i++) {
             if (imstripos($matches[0][$i], 'nofollow') === false && imstripos($matches[0][$i], $imSettings['general']['url']) === false) {
                 $result = trim($matches[0][$i], ">") . ' rel="nofollow">';
                 $str = str_replace(strtolower($matches[0][$i]), strtolower($result), $str);
@@ -3028,339 +3048,6 @@ interface DatabaseAccess
     public function escapeString($string);
     public function affectedRows();
 }
-
-
-
-/**
- * @summary
- * A database driver class which access to the DB using the "mysql_" functions
- * 
- * To use this class, you must include __x5engine.php__ in your code.
- * 
- * @description Create a new ImDb Object
- *
- * @ignore
- * @class
- * @constructor
- * 
- * @param {string} $host  The database host address
- * @param {string} $user  The database username
- * @param {string} $pwd   The database password
- * @param {string} $db    The database name
- */
-class MySQLDriver implements DatabaseAccess
-{
-
-    var $conn;
-    var $db;
-    var $db_name;
-    var $engine = "MYISAM";
-    
-    function __construct($host, $user, $pwd, $db)
-    {
-        $this->setUp($host, $user, $pwd, $db);
-    }
-    
-    function ImDb($host, $user, $pwd, $db)
-    {
-        $this->setUp($host, $user, $pwd, $db);
-    }
-
-    function setUp($host, $user, $pwd, $db)
-    {
-        $this->db_name = $db;
-        $this->conn = @mysql_connect($host, $user, $pwd);
-        if ($this->conn === false)
-            return;
-        $this->db = @mysql_select_db($db, $this->conn);
-        if ($this->db === false)
-            return;
-        if (function_exists('mysql_set_charset'))
-            @mysql_set_charset("utf8", $this->conn);
-        else
-            @mysql_query('SET NAMES "utf8"', $this->conn);
-    }
-
-    /**
-     * Check if the class is connected or not to a db
-     *
-     * @return {boolean} True if the class is connected to a DB. False otherwise.
-     */
-    function testConnection()
-    {
-        return ($this->conn !== false && $this->db !== false);
-    }
-
-    /**
-     * Close the connection
-     * 
-     * @return void
-     */
-    function closeConnection()
-    {
-        @mysql_close($this->conn);
-    }
-
-    function get_db_name()
-    {
-        return $this->db_name;
-    }
-
-    /**
-     * Create a new table or update an existing one.
-     * 
-     * @param string $name   The table name
-     * @param array $fields  The table fields list as array of associative arrays (one array item foreach table field). must be passed as stated in the example.
-     *
-     * @example
-     * $db->createTable('tableName', array(
-     *     "field1" => array(
-     *         "type" => "INTEGER",
-     *         "null" => false,
-     *         "auto_increment" => true,
-     *         "primary" => true
-     *     ),
-     *     "field2" => array(
-     *         "type" => "TEXT",
-     *         "null" => true,
-     *         "auto_increment" => false,
-     *         "more" => "CHARACTER SET UTF-8"
-     *     ))
-     * );
-     * 
-     * @return boolean True if the table was created succesfully.
-     */
-    function createTable( $name, $fields )
-    {
-        $qfields = array();
-        $primaries = array();
-        $createResult = false;
-
-        // If the table does not exists, create it
-        if (!$this->tableExists($name)) {
-            $query = "CREATE TABLE `" . $this->db_name . "`.`" . $name . "` (";
-            foreach ($fields as $key => $value) {
-                $qfields[] = "`" . $key . "` " .
-                            $value['type'] .
-                            ($value['type'] == 'TEXT' || $value['type'] == 'MEDIUMTEXT' ? " CHARACTER SET utf8 COLLATE utf8_unicode_ci" : "") .
-                            (!isset($value['null']) || !$value['null'] ? " NOT NULL" : "") .
-                            (isset($value['unique']) && $value['unique'] ? " UNIQUE" : "") .
-                            (isset($value['auto_increment']) ? " AUTO_INCREMENT" : "") .
-                            (isset($value['more']) ? " " . $value['more'] : "");
-                if (isset($value['primary']) && $value['primary']) {
-                    $primaries[] = "`" . $key . "`";
-                }
-            }
-            $query .= implode(",", $qfields);
-            if (count($primaries))
-                $query .= ", PRIMARY KEY (" . implode(",", $primaries) . ")";
-            $query .= ") ENGINE = " . $this->engine . " ;";
-            $createResult = mysql_query($query, $this->conn);
-        } else {
-            $result = mysql_query("SHOW COLUMNS FROM `" . $this->db_name . "`.`" . $name . "`", $this->conn);
-            // Alter table flag: if true execute the query at the end
-            $alterTable = false;
-            if ($result) {
-                // Actual fields
-                $query = "ALTER TABLE `" . $this->db_name. "`.`" . $name . "`";
-                $act_fields = array();
-                while ($row = mysql_fetch_array($result)) {
-                    $act_fields[] = $row;
-                    $act_fields_names[] = $row[0];
-                }
-                // New fields
-                $new_fields = array_diff(array_keys($fields), $act_fields_names);
-                $new_fields = array_merge($new_fields); // Order the indexes
-                if (count($new_fields) > 0) {
-                    foreach ($new_fields as $key) {
-                        $qfields[] = " ADD `" . $key . "` " . $fields[$key]['type'] . 
-                        ($fields[$key]['type'] == 'TEXT' || $fields[$key]['type'] == 'MEDIUMTEXT' ? " CHARACTER SET utf8 COLLATE utf8_unicode_ci" : "") .
-                        (!isset($fields[$key]['null']) || !$fields[$key]['null'] ? " NOT NULL" : "") .
-                        (isset($value['unique']) && $value['unique'] ? " UNIQUE" : "") .
-                        (isset($fields[$key]['auto_increment']) && $fields[$key]['auto_increment'] ? " AUTO_INCREMENT" : "") .
-                        // WSXTWE-1215: Manage the adding/removal of a primary key
-                        (isset($fields[$key]['primary']) && $fields[$key]['primary'] ? " PRIMARY KEY" : "") .
-                        (isset($fields[$key]['more']) ? " " . $fields[$key]['more'] : "");
-                    }
-                    $alterTable = true;
-                }
-                // Check if it's necessary to do some changes on actual fields: if yes, consider them in the alter query
-                foreach ($act_fields as $act_field) {
-                    foreach ($fields as $key => $value) {
-                        $type = null;
-                        $currentLenght = null;
-                        $newLenght = null;
-                        if (substr(strtolower($act_field["Type"]), 0, 4) === "int(" && substr(strtolower($value['type']), 0, 4) === "int(") {
-                            $type = "int";
-                            $currentLenght = substr(substr($act_field["Type"], strpos($act_field["Type"], "(") + 1), 0, -1);
-                            $newLenght = substr(substr($value['type'], strpos($value['type'], "(") + 1), 0, -1);
-                        }
-                        else if (substr(strtolower($act_field["Type"]), 0, 8) === "varchar(" && substr(strtolower($value['type']), 0, 8) === "varchar(") {
-                            $type = "varchar";
-                            $currentLenght = substr(substr($act_field["Type"], strpos($act_field["Type"], "(") + 1), 0, -1);
-                            $newLenght = substr(substr($value['type'], strpos($value['type'], "(") + 1), 0, -1);
-                        }
-                        if ($act_field["Field"] == $key) {
-                            // Check if some actual "int" fields increment their length: if yes, consider them in the alter query
-                            if ($type == "int") {
-                                $fixAutoIncrement = false;
-                                // WSX5-2950: This fix some situations where an existing field lost his "auto increment" property. If there is a row with this field set to 0, update it to the next highest value.
-                                if (isset($value["auto_increment"]) && $value["auto_increment"] && !strpos($act_field["Extra"], "auto_increment")) {
-                                    $fixAutoIncrement = true;
-                                    $q = mysql_query("SELECT * FROM `" . $this->db_name . "`.`" . $name . "` WHERE `" . $key . "` = 0", $this->conn);
-                                    $res = mysql_num_rows($q);
-                                    if ($res !== false && $res > 0) {
-                                        $q = mysql_query("SELECT MAX(`" . $key . "`) AS `highest` FROM `". $this->db_name . "`.`" . $name . "`", $this->conn);
-                                        $res = mysql_fetch_array($q);
-                                        $highestValue = $res !== false ? $res["highest"] : 1;
-                                        mysql_query("UPDATE `" . $this->db_name . "`.`" . $name . "` SET `" . $key . "` = " . ($highestValue + 1) . " WHERE `" . $key . "` = 0", $this->conn);
-                                    }
-                                }
-                                if ($newLenght > $currentLenght || $fixAutoIncrement) {
-                                    $modify = " MODIFY `" . $key . "` " . $value['type'];
-                                    $modify .= (!isset($value['null']) || !$value['null'] ? " NOT NULL" : "");
-                                    $modify .= (isset($value['unique']) && $value['unique'] ? " UNIQUE" : "");
-                                    $modify .= (isset($value['auto_increment']) && $value['auto_increment'] ? " AUTO_INCREMENT" : "");
-                                    $modify .= (isset($value['more']) ? " " . $value['more'] : "");
-                                    $qfields[] = $modify;
-                                    $alterTable = true;
-                                }
-                            }
-                            // Check if some actual "varchar" fields increment their length: if yes, consider them in the alter query
-                            else if ($type == "varchar" && $newLenght > $currentLenght) {
-                                $modify = " MODIFY `" . $key . "` " . $value['type'];
-                                $modify .= (!isset($value['null']) || !$value['null'] ? " NOT NULL" : "");
-                                $modify .= (isset($value['unique']) && $value['unique'] ? " UNIQUE" : "");
-                                $modify .= (isset($value['more']) ? " " . $value['more'] : "");
-                                $qfields[] = $modify;
-                                $alterTable = true;
-                            }
-                            // Check if some actual "text" fields should be altered to "mediumtext": if yes, consider them in the alter query
-                            else if (strtolower($act_field["Type"]) == "text" && strtolower($value['type']) == "mediumtext") {
-                                $modify = " MODIFY `" . $key . "` " . $value['type'];
-                                $modify .= " CHARACTER SET utf8 COLLATE utf8_unicode_ci";
-                                $modify .= (!isset($value['null']) || !$value['null'] ? " NOT NULL" : "");
-                                $modify .= (isset($value['unique']) && $value['unique'] ? " UNIQUE" : "");
-                                $modify .= (isset($value['more']) ? " " . $value['more'] : "");
-                                $qfields[] = $modify;
-                                $alterTable = true;
-                            }
-                        }
-                    }
-                }
-                // If alter query must be executed, execute it
-                if ($alterTable) {
-                    $query .= implode(",", $qfields);
-                    $createResult = mysql_query($query, $this->conn);
-                }
-            }
-        }
-        return $createResult;
-    }
-
-    /**
-     * Delete a table from the database.
-     * 
-     * @param {string} $table The table name
-     *
-     * @return {Void}
-     */
-    function deleteTable($table)
-    {
-        mysql_query("DROP TABLE " . $this->db_name . "." . $table, $this->conn);
-    }
-
-    /**
-     * Check if the table exists
-     * 
-     * @param {string} $table The table name
-     * 
-     * @return {boolean} True if the table exists. False otherwise.
-     */
-    function tableExists($table)
-    {
-        $result = mysql_query("SHOW FULL TABLES FROM `" . $this->db_name . "` LIKE '" . mysql_real_escape_string($table, $this->conn) . "'", $this->conn);
-        // Check that the name is correct (usage of LIKE is not correct if there are wildcards in the table name. Unfortunately MySQL 4 doesn't allow another syntax..)
-        while (!is_bool($result) && $tb = mysql_fetch_array($result)) {
-            if ($tb[0] == $table)
-                return true;
-        }
-        return false;
-    }
-
-    /**
-     * Get the last MySQL error.
-     * 
-     * @return {array}
-     */
-    function error()
-    {
-        return mysql_error();
-    }
-
-    /**
-     * Provide the last inserted ID of the AUTOINCREMENT column
-     * 
-     * @return {int} The id of the latest insert operation
-     */
-    function lastInsertId()
-    {
-        $res = $this->query("SELECT LAST_INSERT_ID() AS `id`");
-        if (count($res) > 0 && isset($res[0]['id'])) {
-            return $res[0]['id'];
-        }
-        return 0;
-    }
-
-    /**
-     * Execute a MySQL query.
-     * 
-     * @param {string} $query
-     * 
-     * @return {array}        The query result or FALSE on error
-     */
-    function query($query)
-    {
-        $result = mysql_query($query, $this->conn);
-        if (!is_bool($result)) {
-            $rows = array();
-            while($row = mysql_fetch_array($result)) {
-                $rows[] = $row;
-            }
-            return $rows;
-        }
-        return $result;
-    }
-
-    /**
-     * Escape a MySQL query string.
-     * 
-     * @param {string} $string The string to escape
-     * 
-     * @return {string} The escaped string
-     */
-    function escapeString($string)
-    {
-        if (!is_array($string)) {
-            return mysql_real_escape_string($string, $this->conn);
-        } else {
-            for ($i = 0; $i < count($string); $i++)
-                $string[$i] = $this->escapeString($string[$i]);
-            return $string;
-        }
-    }
-
-    /**
-     * Return the number of affected rows in the last query.
-     * 
-     * @return {integer} The number of affected rows.
-     */
-    function affectedRows()
-    {
-        return mysql_affected_rows($this->conn);
-    }
-}
-
 
 
 
@@ -3736,8 +3423,6 @@ class ImDb implements DatabaseAccess
         // Detect the correct driver
         if (function_exists("mysqli_connect")) {
             $this->driver = new MySQLiDriver($host, $user, $pwd, $db);
-        } else if (function_exists("mysql_connect")) {
-            $this->driver = new MySQLDriver($host, $user, $pwd, $db);
         } else {
             die("No database support detected");
         }
@@ -4040,7 +3725,7 @@ class ImDb implements DatabaseAccess
             }
             if (is_array($column) && count($column)) {
                 if (isset($column['column']) || isset($column['fn'])) {
-                    $name = $this->_to_sql_column_name($column['column']);
+                    $name = $this->_to_sql_column_name(isset($column['column']) ? $column['column'] : null);
                     $as = isset($column['as']) ? ' AS ' . $this->_to_sql_column_name($column['as']) : '';
                     return isset($column['fn']) ? strtoupper($column['fn']) . '(' . $name . ')' . $as : $name . $as;
                 } else {
@@ -4197,10 +3882,10 @@ class Analytics
 	/**
 	 * Register the visit of an url
 	 *
-     * @param  String $uid    The current user unique id
-	 * @param  String $url    The visited url in the current domain
-	 * @param  String $lang   The user's language
-	 * @param  String [$ts]   The timestamp in php format yyyy-MM-dd hh:mm:ss. Leave null to set automatically.
+     * @param String $uid    The current user unique id
+	 * @param String $url    The visited url in the current domain
+	 * @param String $lang   The user's language
+	 * @param String $ts   The timestamp in php format yyyy-MM-dd hh:mm:ss. Leave null to set automatically.
 	 *
      * @return Bool           True if the registration was ok
 	 */
@@ -4382,7 +4067,7 @@ class Analytics
         if (!is_array($totalcount)) {
             return $data;
         }
-        $data['total_count'] = $totalcount[0]['count'];
+        $data['total_count'] = isset($totalcount[0]['count']) ? $totalcount[0]['count'] : 0;
 
         $uniquecountq = $this->db->select(array(
             'select' => array('fn' => 'count', 'column' => array('fn' => 'distinct', 'column' => 'url'), 'as' => 'count'),
@@ -4394,7 +4079,7 @@ class Analytics
             return $data;
         }
         foreach ($uniquecountq as $count) {
-            $data['total_unique_count'] += $count['count'];
+            $data['total_unique_count'] += isset($count['count']) ? $count['count'] : 0;
         }
 
         $select = array(
@@ -4416,10 +4101,10 @@ class Analytics
         if (is_array($results)) {
             foreach ($results as $entry) {
                 $data['data'][$entry['url']] = array(
-                    'count'             => $entry['count'],
-                    'count_perc'        => $entry['count'] / $data['total_count'],
-                    'unique_count'      => $entry['unique_count'],
-                    'unique_count_perc' => $entry['unique_count'] / $data['total_unique_count']
+                    'count'             => isset($entry['count']) ? $entry['count'] : 0,
+                    'count_perc'        => isset($entry['count']) && isset($data['total_count']) ? $entry['count'] / $data['total_count'] : 0,
+                    'unique_count'      => isset($entry['unique_count']) ? $entry['unique_count'] : 0,
+                    'unique_count_perc' => isset($entry['unique_count']) && isset($data['total_unique_count']) ? $entry['unique_count'] / $data['total_unique_count'] : 0
                 );
             }
         }
@@ -4450,7 +4135,7 @@ class Analytics
         if (!is_array($total)) {
             return $data;
         }
-        $data['total_count'] = $total[0]['count'];
+        $data['total_count'] = isset($total[0]['count']) ? $total[0]['count'] : 0;
 
         $select = array(
             'select' => array(
@@ -4470,8 +4155,8 @@ class Analytics
         if (is_array($results)) {
             foreach ($results as $entry) {
                 $data['data'][$entry['lang']] = array(
-                    "count" => $entry['count'],
-                    "perc"  => $entry['count'] / $data['total_count']
+                    "count" => isset($entry['count']) ? $entry['count'] : 0,
+                    "perc"  => isset($entry['count']) && isset($data['total_count']) ? $entry['count'] / $data['total_count'] : 0
                 );
             }
         }
@@ -4536,7 +4221,7 @@ class ImForm
      * Set the data of a field
      * 
      * @param string $label  The field label
-     * @param strin  $value  The field value
+     * @param string  $value  The field value
      * @param string $dbname The name to use in the db
      * @param boolean $isSeparator True if this field must be used as separator in the email
      * 
@@ -4599,7 +4284,7 @@ class ImForm
      * @param mixed   $extensions The extensions allowed for the file (string or array)
      * @param integer $maxsize    The max size (0 to not check this)
      * 
-     * @param integer 1 = No file uploaded, 0 = success, -1 = generic error, -2 = extension not allowed, -3 = File too large
+     * @return  integer 1 = No file uploaded, 0 = success, -1 = generic error, -2 = extension not allowed, -3 = File too large
      */
     function setFile($label, $value, $folder = "", $dbname = "", $extensions = array(), $maxsize = 0)
     {
@@ -4627,9 +4312,9 @@ class ImForm
 
         }
             
-        if ($folder != "" && substr($folder, 0, -1) != "/")
+        if ($folder != "" && substr($folder, -1) != "/"){
             $folder .= "/";
-
+        }
 
         for ($i=0; $i<$file_count; $i++) {
             $newValue = array ();
@@ -4796,7 +4481,7 @@ class ImForm
     {
         global $ImMailer;
         global $imSettings;
-        $rtl = $imSettings['general']['rtl'];
+        $rtl = isset($imSettings['general']['rtl']) ? $imSettings['general']['rtl'] : false;
 
         //Form Data
         $txtData = strip_tags($text);
@@ -4844,7 +4529,9 @@ class ImForm
                         // Is it an URL?
                         $htmData .= "<tr valign=\"top\"><td width=\"25%\" style=\"[email:contentStyle]\"><b>" . str_replace(array("\\'", '\\"'), array("'", '"'), $label) . "</b></td><td style=\"[email:contentStyle]\"><a style=\"color:inherit; text-decoration:underline;\" href=\"" . $field['value'] . "\">". $field['value'] . "</a></td></tr>\r\n";
                     } else {
-                        $htmData .= "<tr valign=\"top\"><td width=\"25%\" style=\"[email:contentStyle]\"><b>" . str_replace(array("\\'", '\\"'), array("'", '"'), $label) . "</b></td><td style=\"[email:contentStyle]\">" . str_replace(array("\\'", '\\"'), array("'", '"'), $field['value']) . "</td></tr>\r\n";
+                        
+                        $htmData .= "<tr valign=\"top\"><td width=\"25%\" style=\"[email:contentStyle]\"><b>" . str_replace(array("\\'", '\\"'), array("'", '"'), $label) . "</b></td><td style=\"[email:contentStyle]\">" . nl2br(str_replace(array("\\'", '\\"'), array("'", '"'), $field['value'])) . "</td></tr>\r\n";
+                    
                     }
                     if ($csv) {
                         $csvHeader .= str_replace(array("\\'", '\\"'), array("'", '"'), $field['label']) . ";";
@@ -4890,7 +4577,7 @@ class ImForm
     {
         global $ImMailer;
         global $imSettings;
-        $rtl = $imSettings['general']['rtl'];
+        $rtl = isset($imSettings['general']['rtl']) ? $imSettings['general']['rtl'] : false;
 
         //Form Data
         $txtData = strip_tags($text);
@@ -5538,7 +5225,8 @@ class imPrivateArea
 
         $s = explode(".", $s);
         $r = array();
-        for($i = 0; $i < count($s); $i++) {
+        $sCount = count($s);
+        for($i = 0; $i < $sCount; $i++) {
             $r[$i] = chr($s[$i] - ord($k[$i % strlen($k)]));
         }
         return implode('', $r);
@@ -5868,7 +5556,7 @@ class imSearch {
         $found_content = array();
         $found_count = array();
 
-        if (isset($imSettings['blog']) && is_array($imSettings['blog']['posts'])) {
+        if (isset($imSettings['blog']) && isset($imSettings['blog']['posts']) && is_array($imSettings['blog']['posts'])) {
             foreach ($imSettings['blog']['posts'] as $key => $value) {
                 // WSXELE-799: Skip the post that are published in the future
                 if ($value['utc_time'] > time()) {
@@ -6894,8 +6582,9 @@ class ImTopic
         if (strlen(trim($folder)) == 0)
             return "./";
 
-        if (substr($folder, 0, -1) != "/")
+        if (substr($folder, -1) != "/"){
             $folder .= "/";
+        }
 
         return $folder;
     }
@@ -7045,7 +6734,7 @@ class ImTopic
      * Used in getCommentsToValidate in order to sort the comments array in the right descending order
      * @param  Array $a The comment data a
      * @param  Array $b The comment data b
-     * @return Void
+     * @return int
      */
     static function compareCommentsArray($a, $b)
     {
@@ -7240,7 +6929,7 @@ class ImTopic
 
         if (count($c) > 0) {
             foreach ($c as $comment) {
-                if ($comment['approved'] == "1" || $admin) {
+                if (isset($comment['approved']) && $comment['approved'] == "1" || $admin) {
                     if ( isset($comment['body']) ) {
                         $totalComments++;
                         if ( isset($comment['rating']) && $comment['rating'] > 0 ) {
@@ -7603,7 +7292,8 @@ class ImTopic
         $c = $this->comments->getAll();
         if (count($c) > 0) {
             // Show the comments
-            for ($i = 0; $i < count($c); $i++) {
+            $commentsCount = count($c);
+            for ($i = 0; $i < $commentsCount; $i++) {
                 $comment = $c[$i];
                 if (isset($comment['body'])) {
                     echo "<div class=\"topic-comment " . ($comment['approved'] == "1" ? "enabled" : "disabled") . ($comment['abuse'] == "1" ? " abused" : "") . "\">\n";
@@ -7669,7 +7359,12 @@ class ImTopic
         //value of voted
         $cookieVotedValue = $cookieVotedIsNull ? 0 : im_get_cookie('vtd' . $this->id);
 
-        if ( isset($_POST['x5topicid']) && $_POST['x5topicid'] == $this->id && $cookieVotedIsNull && isset($_POST['imJsCheck']) && $_POST['imJsCheck'] == 'jsactive' ) {
+        if ( 
+            isset($_POST['x5topicid']) && $_POST['x5topicid'] == $this->id && 
+            $cookieVotedIsNull && 
+            isset($_POST['imJsCheck']) && $_POST['imJsCheck'] == 'jsactive' && 
+            isset($_POST['rating'])
+        ) {
             $this->comments->add(
                 array(
                     "rating" => $_POST['rating'],
@@ -7771,7 +7466,7 @@ class imXML
             }
         }
         fclose($fp);
-        return $this->tree[0]["content"];
+        return isset($this->tree[0]["content"]) ? $this->tree[0]["content"] : false;
     }
 
     function parse_string($str)
@@ -8255,16 +7950,17 @@ function in_array_field($needle, $haystack, $all = false)
  * @return string
  */
 function getLastAvailableDate($timeArr) {
+    $currentTime = time();
     if (count($timeArr) > 0) {
         sort($timeArr, SORT_DESC);
-        $utcTime = time() + date("Z", time());
+        $utcTime = $currentTime + date("Z", $currentTime);
         foreach ($timeArr as $time) {
             if ($time <= $utcTime) {
                 return date("r", $time);
             }
         }
     }
-    return date("r", time());
+    return date("r", $currentTime);
 }
 
 /**
