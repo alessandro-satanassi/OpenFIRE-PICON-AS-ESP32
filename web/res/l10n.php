@@ -71,6 +71,7 @@
 	$l10n['blog_published'] = 'Pubblicato';
 	$l10n['blog_rating'] = 'Voto:';
 	$l10n['blog_read_all'] = 'Leggi';
+	$l10n['blog_read_time'] = '[MM] minuti';
 	$l10n['blog_send'] = 'Invia';
 	$l10n['blog_send_confirmation'] = 'Commento inviato!<br />Il commento verrà  visualizzato dopo approvazione dell\'amministratore del sito.';
 	$l10n['blog_send_error'] = 'Non è stato possibile inserire il commento.';
@@ -82,7 +83,6 @@
 	$l10n['blog_unapprove_link'] = 'Usa il seguente link per disapprovare il commento';
 	$l10n['blog_unapprove_question'] = 'Vuoi disapprovare questo commento e nasconderlo?';
 	$l10n['blog_waiting_approval'] = 'In attesa di moderazione';
-	$l10n['blog_website'] = 'Sito Internet:';
 	$l10n['browser_compat_1'] = 'Il Browser che stai utilizzando non supporta le funzionalità richieste per visualizzare questo Sito.';
 	$l10n['browser_compat_1_warning'] = 'Il Browser che stai utilizzando potrebbe non supportare le funzionalità richieste per visualizzare questo Sito.';
 	$l10n['browser_compat_2'] = '[1]Aggiorna il tuo browser[/1] oppure [2]procedi ugualmente[/2].';
@@ -97,13 +97,24 @@
 	$l10n['cmn_pay_with'] = 'Paga con';
 	$l10n['cmn_subject'] = 'Oggetto';
 	$l10n['comments_and_ratings_add_review'] = 'Scrivi una recensione';
+	$l10n['comments_and_ratings_add_review_label_blog'] = 'La tua opinione è importante per noi e ci aiuta a migliorare il servizio.';
+	$l10n['comments_and_ratings_add_review_label_ecommerce'] = 'La tua opinione è importante per noi e ci aiuta a migliorare il servizio.';
+	$l10n['comments_and_ratings_add_review_label_object'] = 'La tua opinione è importante per noi e ci aiuta a migliorare il servizio.';
+	$l10n['comments_and_ratings_add_review_title'] = 'Scrivi una recensione';
+	$l10n['comments_and_ratings_average_rate'] = 'Voto medio:';
+	$l10n['comments_and_ratings_email'] = 'E-Mail';
+	$l10n['comments_and_ratings_email_tip'] = 'L\'indirizzo email sarà visibile solo all\'autore e non verrà pubblicato sul sito.';
 	$l10n['comments_and_ratings_enter_rating'] = 'Inserisci la tua valutazione:';
 	$l10n['comments_and_ratings_form_attachment'] = 'File Allegato';
+	$l10n['comments_and_ratings_go_to_comments'] = 'Visualizza recensioni';
 	$l10n['comments_and_ratings_label_review'] = 'recensione';
 	$l10n['comments_and_ratings_label_reviews'] = 'recensioni';
+	$l10n['comments_and_ratings_message'] = 'Messaggio';
+	$l10n['comments_and_ratings_name'] = 'Nome';
 	$l10n['comments_and_ratings_new_abuse'] = 'Grazie per la tua segnalazione';
 	$l10n['comments_and_ratings_no_reviews'] = 'Non sono presenti ancora recensioni.';
 	$l10n['comments_and_ratings_number_of_rates'] = 'Numero di voti:';
+	$l10n['comments_and_ratings_percentage_of_rates'] = 'Percentuale di voti:';
 	$l10n['comments_and_ratings_rate'] = 'Voto:';
 	$l10n['comments_and_ratings_selected_rate'] = 'Voto selezionato:';
 	$l10n['comments_and_ratings_send_review'] = 'Invia Recensione';
@@ -137,6 +148,8 @@
 	$l10n['form_field_desc'] = 'Descrizione campo';
 	$l10n['form_format'] = '[FIELD] non è nel formato corretto.';
 	$l10n['form_from'] = 'E-mail mittente:';
+	$l10n['form_goback'] = 'Indietro';
+	$l10n['form_gonext'] = 'Avanti';
 	$l10n['form_js_error'] = 'E\' necessario attivare JavaScript!';
 	$l10n['form_js_error_redirect'] = 'Verrai riportato alla pagina precedente entro 5 secondi...';
 	$l10n['form_label_email'] = 'E-Mail:';
@@ -172,6 +185,8 @@
 	$l10n['gallery_pause'] = 'Pausa';
 	$l10n['gallery_play'] = 'Avvia';
 	$l10n['guestbook_messages'] = 'Messaggi';
+	$l10n['guestbook_new_comment_object'] = 'Guestbook: Nuovo commento';
+	$l10n['guestbook_new_comment_text'] = 'E\' stato inserito un nuovo commento al guestbook';
 	$l10n['image_next'] = 'Immagine successiva';
 	$l10n['image_prev'] = 'Immagine precedente';
 	$l10n['InnerJump_Anchor_Menu'] = 'Menu principale:';
@@ -182,6 +197,7 @@
 	$l10n['InnerJump_Footer_Title_Content'] = 'Rileggi i contenuti della pagina';
 	$l10n['InnerJump_Footer_Title_Menu'] = 'Naviga ancora nella pagina';
 	$l10n['lang_code'] = 'it-IT';
+	$l10n['magicsite_created_with'] = 'Creato con';
 	$l10n['menu_close_submenu'] = 'Chiudi sottomenù di';
 	$l10n['menu_open_submenu'] = 'Mostra sottomenù di';
 	$l10n['menu_show_menu'] = 'Mostra menù';
@@ -246,23 +262,6 @@
 	$l10n['video_unmute_button'] = 'Attiva audio';
 	$l10n['welcomepage_go_to_home'] = 'Vai all\'homepage';
 	$l10n['welcomepage_title'] = 'Pagina di ingresso';
-	$l10n['magicsite_created_with'] = 'Creato con';
-	$l10n['blog_read_time'] = '[MM] minuti';
-	$l10n['guestbook_new_comment_object'] = 'Guestbook: Nuovo commento';
-	$l10n['guestbook_new_comment_text'] = 'E\' stato inserito un nuovo commento al guestbook';
-	$l10n['comments_and_ratings_add_review_label_blog'] = 'La tua opinione è importante per noi e ci aiuta a migliorare il servizio.';
-	$l10n['comments_and_ratings_add_review_label_ecommerce'] = 'La tua opinione è importante per noi e ci aiuta a migliorare il servizio.';
-	$l10n['comments_and_ratings_add_review_label_object'] = 'La tua opinione è importante per noi e ci aiuta a migliorare il servizio.';
-	$l10n['comments_and_ratings_add_review_title'] = 'Scrivi una recensione';
-	$l10n['comments_and_ratings_average_rate'] = 'Voto medio:';
-	$l10n['comments_and_ratings_email_tip'] = 'L\'indirizzo email sarà visibile solo all\'autore e non verrà pubblicato sul sito.';
-	$l10n['comments_and_ratings_go_to_comments'] = 'Visualizza recensioni';
-	$l10n['comments_and_ratings_percentage_of_rates'] = 'Percentuale di voti:';
-	$l10n['form_goback'] = 'Indietro';
-	$l10n['form_gonext'] = 'Avanti';
-	$l10n['comments_and_ratings_email'] = 'E-Mail';
-	$l10n['comments_and_ratings_message'] = 'Messaggio';
-	$l10n['comments_and_ratings_name'] = 'Nome';
 
 
 // End of file l10n.php

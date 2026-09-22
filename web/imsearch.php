@@ -2,22 +2,21 @@
 <!DOCTYPE html><!-- HTML5 -->
 <html prefix="og: http://ogp.me/ns#" lang="it-IT" dir="ltr">
 	<head>
-		<title>Ricerca - OpenFIRE PICON-AS Esp32</title>
 		<meta charset="utf-8" />
-		<!--[if IE]><meta http-equiv="ImageToolbar" content="False" /><![endif]-->
+		<title>Ricerca - OpenFIRE PICON-AS Esp32</title>
 		<meta name="author" content="Alessandro Satanassi" />
-		<meta name="generator" content="Incomedia WebSite X5 Evo 2026.2.4 - www.websitex5.com" />
+		<meta name="generator" content="Incomedia WebSite X5 Evo 2026.2.7 - www.websitex5.com" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		
-		<link rel="stylesheet" href="style/reset.css?2026-2-4-0" media="screen,print" />
-		<link rel="stylesheet" href="style/print.css?2026-2-4-0" media="print" />
-		<link rel="stylesheet" href="style/style.css?2026-2-4-0" media="screen,print" />
-		<link rel="stylesheet" href="style/template.css?2026-2-4-0" media="screen" />
+		<link rel="stylesheet" href="style/reset.css?2026-2-7-0" media="screen,print" />
+		<link rel="stylesheet" href="style/print.css?2026-2-7-0" media="print" />
+		<link rel="stylesheet" href="style/style.css?2026-2-7-0" media="screen,print" />
+		<link rel="stylesheet" href="style/template.css?2026-2-7-0" media="screen" />
 		
 		<link rel="stylesheet" href="pluginAppObj/imFooter_pluginAppObj_03/custom.css" media="screen, print" />
-		<link rel="stylesheet" href="pcss/imsearch.css?2026-2-4-0-639218349250409077" media="screen,print" />
-		<script src="res/jquery.js?2026-2-4-0"></script>
-		<script src="res/x5engine.js?2026-2-4-0" data-files-version="2026-2-4-0"></script>
+		<link rel="stylesheet" href="pcss/imsearch.css?2026-2-7-0-639257148333187734" media="screen,print" />
+		<script src="res/jquery.js?2026-2-7-0"></script>
+		<script src="res/x5engine.js?2026-2-7-0" data-files-version="2026-2-7-0"></script>
 		
 		<script src="pluginAppObj/imFooter_pluginAppObj_03/main.js"></script>
 		<script>
@@ -25,7 +24,7 @@
 			x5engine.utils.currentPagePath = 'imsearch.php';
 			x5engine.boot.push(function () { x5engine.imPageToTop.initializeButton({}); });
 		</script>
-		<link rel="icon" href="favicon.png?2026-2-4-0-639218349250346597" type="image/png" />
+		<link rel="icon" href="favicon.png?2026-2-7-0-639257148333156172" type="image/png" />
 		<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
 	</head>
 	<body>

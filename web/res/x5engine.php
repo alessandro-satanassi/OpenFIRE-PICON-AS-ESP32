@@ -1066,7 +1066,7 @@ class imBlog
 
 
 
-	function customCardBreakpointString( $cardStyle, $pageData, $widths = null ){
+	function customCardBreakpointString( $cardStyle, $pageData, $widths = null, $fullWidth = false ){
 
 		$breakpointString = "";
 		$cardsperrowString = "";
@@ -1102,7 +1102,7 @@ class imBlog
 					$strPieceCPR = str_replace( "START" , $breakPoints[$i]["start"] . "px" , $strPieceCPR );
 				}
 
-				if ( $breakPoints[$i]["end"] == 0 ) {
+				if ( $breakPoints[$i]["end"] == 0 || $fullWidth ) {
 					$strPieceBP = str_replace( "END" , "100%" , $strPieceBP );
 				} else {
 					$strPieceBP = str_replace( "END" , $w . "px" , $strPieceBP );
@@ -1190,7 +1190,7 @@ class imBlog
 
 
 
-	function customCardMisc( $rootSelector, $cardStyle, $pageData, $widths = null ) {
+	function customCardMisc( $rootSelector, $cardStyle, $pageData, $widths = null, $fullWidth = false ) {
 
 		$misc = array();
 
@@ -1200,7 +1200,7 @@ class imBlog
 
 		if ( isset( $cardStyle ) ) {
 
-			$BPValues = $this->customCardBreakpointString( $cardStyle, $pageData, $widths );
+			$BPValues = $this->customCardBreakpointString( $cardStyle, $pageData, $widths, $fullWidth );
 			$misc["cardBreakpoint"] = $BPValues["breakpointString"];            
 			$misc["cardContentLayout"] = $this->customCardContentLayout( $cardStyle["card"] );
 			$misc["cardLayoutCardArrangement"] = $this->customCardLayoutArrangement( $cardStyle );
@@ -1740,14 +1740,15 @@ END;
      * @param array     $blogPostsPerRow  Array of number of blog posts per row at different breakpoints
      * @param boolean   $cardBPColumns    List of "(max-width: Npx) cards_per_page" rules for the card layout
      * @param boolean   $randomOrder      Whether to show the posts in random order
+     * @param boolean   $fullWidth        Whether the object is full width
      *
      * @return void
      */
-    function showPostsBlogObj($postIds, $l10nStrings, $cardStyle, $objectId, $outerWidths, $innerWidths, $blogPostsPerRow, $cardBPColumns, $randomOrder)
+    function showPostsBlogObj($postIds, $l10nStrings, $cardStyle, $objectId, $outerWidths, $innerWidths, $blogPostsPerRow, $cardBPColumns, $randomOrder, $fullWidth)
     {
         global $imSettings;
 		$card = $cardStyle["card"];
-		$misc = $this->customCardMisc("#" . $objectId, $cardStyle, $imSettings['blog'], $innerWidths);
+		$misc = $this->customCardMisc("#" . $objectId, $cardStyle, $imSettings['blog'], $innerWidths, $fullWidth);
 		$miscGlobal = $this->getCalculatedGlobalData($card, $misc);
 
 		$blogPostsData = array();
@@ -4604,6 +4605,13 @@ class ImForm
     {
         global $ImMailer;
         global $imSettings;
+
+        $placeholders = array(
+            '[NOW]' => formatDate(new DateTime(), false, true, true)
+        );
+        $subject = strtr($subject, $placeholders);
+        $text = strtr($text, $placeholders);
+
         $rtl = isset($imSettings['general']['rtl']) ? $imSettings['general']['rtl'] : false;
 
         //Form Data
@@ -4700,6 +4708,13 @@ class ImForm
     {
         global $ImMailer;
         global $imSettings;
+
+        $placeholders = array(
+            '[NOW]' => formatDate(new DateTime(), false, true, true)
+        );
+        $subject = strtr($subject, $placeholders);
+        $text = strtr($text, $placeholders);
+
         $rtl = isset($imSettings['general']['rtl']) ? $imSettings['general']['rtl'] : false;
 
         //Form Data
